@@ -159,17 +159,58 @@ export default class Compiler {
     constructor(source){
         this.scanner = new Scanner(source);
     }
+
+
     //region error handling and parsing stuff
     // chunk manipulation and emitting bytecode
+    errorAt(token, message){
+        this.parser.panicMode = true;
+        let outputError = `[line ${token.line}] Error`;
+
+        if (token.type === TokenType.TOKEN_EOF){
+            outputError += " at end";
+        } else if (token.type === TokenType.TOKEN_ERROR){
+            //Do nothing
+        } else {
+            outputError += ` at ${token.payload}`;
+        }
+
+        outputError += `: ${message}`;
+        print(outputError);
+        this.parser.hadError = true;
+    }
     errorAtCurrent(message){
-        print(message);
+        this.errorAt(this.parser.current, message);
     };
+    error(message){
+        this.errorAt(this.parser.previous, message);
+    }
+
+    synchronize(){
+        if (this.parser.previous.type == TokenType.TOKEN_SEMICOLON) return;
+        switch (this.parser.current.type) {
+            case TokenType.TOKEN_CLASS:
+            case TokenType.TOKEN_FUN:
+            case TokenType.TOKEN_VAR:
+            case TokenType.TOKEN_FOR:
+            case TokenType.TOKEN_IF:
+            case TokenType.TOKEN_WHILE:
+            case TokenType.TOKEN_PRINT:
+            case TokenType.TOKEN_RETURN:
+                return;
+
+            default:
+                ; // Do nothing.
+        }
+
+        this.advance();
+    }
+
     advance(){
         this.parser.previous = this.parser.current;
 
         for (;;) {
             this.parser.current = this.scanner.scanToken();
-            //TODO remove debug later.
             this.allTokens.push(this.parser.current);
             if (this.parser.current.type !== TokenType.TOKEN_ERROR) break;
 
@@ -193,13 +234,21 @@ export default class Compiler {
     };
     addConstant(value){
         let count = this.current.constants.push(value);
+        if (count > UINT8_COUNT){
+            this.error("Too many constants in one chunk.");
+        }
         const index = count - 1;
         return index;
     }
     addLocal(name){
+        if (this.current.localCount === UINT8_COUNT){
+            this.error("Too many local variables in function.");
+        }
+
         this.current.locals[this.current.localCount++] = {
             name,
-            depth: -1
+            depth: -1,
+            isCaptured: false,
         };
     }
     identifierConstant(identifierName){
@@ -210,7 +259,6 @@ export default class Compiler {
         this.current.lines.push(line);
     };
     emitByte (opcode) {
-        //TODO think about how to emit Opcode for just transpiling
         this.writeChunk(opcode, this.parser.previous.line);
     };
     emitBytes(opCode1, opCode2) {
@@ -235,7 +283,7 @@ export default class Compiler {
         const oneJump = 1;
         const offset = this.current.code.length - loopStart + oneJump;
         if (offset > UINT8_COUNT){
-            this.errorAtCurrent('Loop body too large.');
+            this.error('Loop body too large.');
         }
 
         this.emitByte(offset);
@@ -247,7 +295,13 @@ export default class Compiler {
 
         this.emitByte(OpCode.OP_EMPTY);
 
-        return this.current.code.length - oneJump;
+        const jump = this.current.code.length - oneJump;
+
+        if (jump > UINT8_COUNT) {
+            this.error("Too much code to jump over.");
+        }
+
+        return jump;
     }
 
     patchJump(offset){
@@ -256,7 +310,7 @@ export default class Compiler {
         const jump = this.current.code.length - offset - oneJump;
 
         if (jump > UINT8_COUNT){
-            this.errorAtCurrent('Too much code to jump over.');
+            this.error('Too much code to jump over.');
         }
 
         this.current.code[offset] = jump;
@@ -269,7 +323,7 @@ export default class Compiler {
         //always a prefixRule
         const prefixRule = this.rules[this.parser.previous.type].prefix;
         if (prefixRule === null){
-            this.errorAtCurrent('Expect expression.');
+            this.error('Expect expression.');
             return;
         }
         //only consume the equal if the expression is lower than the assignment
@@ -285,7 +339,7 @@ export default class Compiler {
         }
 
         if (canAssign && this.match(TokenType.TOKEN_EQUAL)){
-            this.errorAtCurrent('Invalid assignment target.');
+            this.error('Invalid assignment target.');
         }
     }
     //endregion
@@ -297,8 +351,7 @@ export default class Compiler {
             let local = compiler.locals[i];
             if (local.name === identifierName) {
                 if (local.depth === -1){
-                    //TODO error
-                    this.errorAtCurrent("Can't read local variable in its own initializer.");
+                    this.error("Can't read local variable in its own initializer.");
                 }
                 return i;
             }
@@ -316,9 +369,8 @@ export default class Compiler {
             }
         }
 
-        if (upvalueCount === MAX_LOCAL){
-            //TODO error
-            this.errorAtCurrent('Too many closure variables in function.');
+        if (upvalueCount === UINT8_COUNT){
+            this.error('Too many closure variables in function.');
             return 0;
         }
 
@@ -381,25 +433,8 @@ export default class Compiler {
         const identifierName = this.parser.previous.payload;
         let identifierConstantIndex = this.identifierConstant(identifierName);
 
-        //We are in global scope
-        if (this.current.scopeDepth == 0){
-
-            //compile the initializer, either there is an expression or there is none
-            //and we set it to NIL
-            if(this.match(TokenType.TOKEN_EQUAL)){
-                //this will put a value on the stack, then at the end,
-                // an OpCode will determine where that variable will live.
-                this.expression();
-            } else {
-                //if there is no value, we set the variable to nil
-                this.emitByte(OpCode.OP_NIL);
-            }
-            //we are at global scope.
-            this.emitBytes(OpCode.OP_DEFINE_GLOBAL, identifierConstantIndex);
-
-            // this.emitBytes(OpCode.OP_SET_GLOBAL, identifierConstantIndex);
-
-        } else {
+        //We are in local scope
+        if (this.current.scopeDepth > 0){
             //we are at the local scope.
             //we are not at the top level, define it locally
             //check to see if that variable exist locally first by looking backward
@@ -410,8 +445,7 @@ export default class Compiler {
                 }
 
                 if (local.name === identifierName){
-                    //TODO change to error
-                    this.errorAtCurrent("Already a variable with this name in this scope.");
+                    this.error("Already a variable with this name in this scope.");
                 }
             }
 
@@ -429,9 +463,23 @@ export default class Compiler {
                 this.emitByte(OpCode.OP_NIL);
             }
 
-            //defineVariable: mark the locals with the scopeDepth, TODO might need to do this for all locals definition
+            //defineVariable: mark the locals with the scopeDepth
             this.current.locals[ this.current.localCount - 1 ].depth = this.current.scopeDepth;
-            // this.emitBytes(OpCode.OP_SET_LOCAL, identifierConstantIndex);
+
+
+        } else {
+            //compile the initializer, either there is an expression or there is none
+            //and we set it to NIL
+            if(this.match(TokenType.TOKEN_EQUAL)){
+                //this will put a value on the stack, then at the end,
+                // an OpCode will determine where that variable will live.
+                this.expression();
+            } else {
+                //if there is no value, we set the variable to nil
+                this.emitByte(OpCode.OP_NIL);
+            }
+            //we are at global scope.
+            this.emitBytes(OpCode.OP_DEFINE_GLOBAL, identifierConstantIndex);
 
         }
 
@@ -524,18 +572,7 @@ export default class Compiler {
             this.emitBytes(OpCode.OP_SET_PROPERTY, identifierConstantIndex);
         } else if (this.match(TokenType.TOKEN_LEFT_PAREN)){
             //combine OP_GET_PROPERTY and OP_CALL
-            let argCount = 0;
-            if (!this.check(TokenType.TOKEN_RIGHT_PAREN)){
-                do {
-                    this.expression();
-                    if (argCount === 255){
-                        this.errorAtCurrent("Can't have more than 255 arguments.");
-                    }
-                    argCount++;
-                } while (this.match(TokenType.TOKEN_COMMA));
-            }
-            this.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after arguments.');
-
+            let argCount = this.argumentList();
             //3 bytes
             this.emitBytes(OpCode.OP_INVOKE, identifierConstantIndex);
             this.emitByte(argCount);
@@ -545,9 +582,8 @@ export default class Compiler {
         }
     }
     this_(){
-
         if (this.currentClass === null){
-            this.errorAtCurrent("can't use 'this' outside of a class.");
+            this.error("can't use 'this' outside of a class.");
             return;
         }
 
@@ -555,9 +591,9 @@ export default class Compiler {
     }
     super_(){
         if (this.currentClass === null){
-            this.errorAtCurrent("can't user 'super' outside of a class.");
+            this.error("can't user 'super' outside of a class.");
         } else if (!this.currentClass.hasSuperClass){
-            this.errorAtCurrent("Can't use 'super' in a class with no superclass.");
+            this.error("Can't use 'super' in a class with no superclass.");
         }
         this.consume(TokenType.TOKEN_DOT , "Expect '.' after 'super'." );
         this.consume(TokenType.TOKEN_IDENTIFIER , "Expect superclass method name." );
@@ -584,7 +620,7 @@ export default class Compiler {
             do {
                 this.expression();
                 if (argCount === 255){
-                    this.errorAtCurrent("Can't have more than 255 arguments.");
+                    this.error("Can't have more than 255 arguments.");
                 }
                 argCount++;
             } while (this.match(TokenType.TOKEN_COMMA));
@@ -606,7 +642,6 @@ export default class Compiler {
                 this.current.arity++;
                 if (this.current.arity > 255) {
                     this.errorAtCurrent("Can't have more than 255 parameters.");
-                    //TODO compile error
                 }
                 this.consume(TokenType.TOKEN_IDENTIFIER, "Expect parameter name.");
                 // const parameterName = this.parser.previous.payload;
@@ -623,8 +658,7 @@ export default class Compiler {
                         }
 
                         if (local.name === identifierName){
-                            //TODO change to error
-                            this.errorAtCurrent("Already a variable with this name in this scope.");
+                            this.error("Already a variable with this name in this scope.");
                         }
                     }
 
@@ -664,8 +698,7 @@ export default class Compiler {
                 }
 
                 if (local.name === identifierName){
-                    //TODO change to error
-                    this.errorAtCurrent("Already a variable with this name in this scope.");
+                    this.error("Already a variable with this name in this scope.");
                 }
             }
             //define the variable without existences
@@ -798,7 +831,6 @@ export default class Compiler {
 
     }
 
-    //TODO not done yet, had to go back and figure out upvalues
     classDeclaration(){
         this.consume (TokenType.TOKEN_IDENTIFIER , "Expect class name." );
         const classIdentifier = this.parser.previous.payload;
@@ -824,8 +856,7 @@ export default class Compiler {
                 }
 
                 if (local.name === classIdentifier) {
-                    //TODO change to error
-                    this.errorAtCurrent("Already a variable with this name in this scope.");
+                    this.error("Already a variable with this name in this scope.");
                 }
             }
 
@@ -857,7 +888,7 @@ export default class Compiler {
 
             //check that the class and superclass are different
             if (classIdentifier === superClassIdentifier){
-                this.errorAtCurrent("A class can't inherit from itself.");
+                this.error("A class can't inherit from itself.");
             }
 
             this.beginScope();
@@ -984,7 +1015,7 @@ export default class Compiler {
     }
     returnStatement(){
         if (this.current.name === '<script>'){
-            this.errorAtCurrent("Can't return from top-level code.");
+            this.error("Can't return from top-level code.");
         }
 
         if(this.match(TokenType.TOKEN_SEMICOLON)){
@@ -992,7 +1023,7 @@ export default class Compiler {
         } else {
 
             if (this.current.type === ValueType.INITIALIZER) {
-                this.errorAtCurrent("Can't return a value from an initializer.");
+                this.error("Can't return a value from an initializer.");
             }
 
             this.expression();
@@ -1081,7 +1112,7 @@ export default class Compiler {
         } else {
             this.statement();
         }
-        // if (this.parser.panicMode) synchronize();
+        if (this.parser.panicMode) this.synchronize();
     };
 
     endCompiler(){
@@ -1096,8 +1127,8 @@ export default class Compiler {
     //endregion
 
     compile() {
-        // this.parser.hadError = false;
-        // this.parser.panicMode = false;
+        this.parser.hadError = false;
+        this.parser.panicMode = false;
 
         this.advance();
 
@@ -1107,8 +1138,6 @@ export default class Compiler {
         }
         const closure = this.endCompiler();
 
-        // return this.parser.hadError ? null : closure;
-        //should return the top level function.
-        return closure;
+        return this.parser.hadError ? null : closure;
     }
 }

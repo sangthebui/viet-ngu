@@ -70,6 +70,10 @@ export default class VM {
     currentFunctionStackLocation = 0;
     openUpvalues = null;
 
+    runtimeError(message){
+        print(message);
+    }
+
     push(value){
         return this.stack.push(value) - 1;
     }
@@ -104,9 +108,7 @@ export default class VM {
         }
     }
 
-    runtimeError(message){
-        print(message);
-    }
+
 
     captureUpvalue(local){
         let prevUpvalue = null;
@@ -186,13 +188,12 @@ export default class VM {
             return this.call(callee, argCount);
         }
 
-
         return false;
     }
 
     call(closure, argCount){
         if (argCount !== closure.arity){
-            this.runtimeError('Expected same number of arguments.');
+            this.runtimeError(`Expected ${closure.arity} arguments but got ${argCount}.`);
             return false;
         }
 
@@ -223,7 +224,7 @@ export default class VM {
         const receiver = this.peek(0);
 
         const boundMethod = {
-            type: ValueType.BOUND_METHOD, //TODO add an extra parameter for typ
+            type: ValueType.BOUND_METHOD,
             receiver,
             method: klass.methods[name],
         };
@@ -240,8 +241,6 @@ export default class VM {
             this.runtimeError(`Undefined property ${methodName}`);
             return false;
         }
-
-
         return this.call(method, argCount);
     }
 
@@ -328,13 +327,17 @@ export default class VM {
                 }
                 case OpCode.OP_SET_GLOBAL: {
                     const key = read_string();
-                    const value = this.pop();
+                    const value = this.peek(0);
                     this.globals[key] = value;
                     break;
                 }
                 case OpCode.OP_GET_GLOBAL: {
                     const key = read_string();
                     const value = this.globals[key];
+                    if (!value){
+                        this.runtimeError(`Undefined variable ${key}`);
+                        return InterpretResult.INTERPRET_RUNTIME_ERROR;
+                    }
                     this.push(value);
                     break;
                 }
@@ -363,16 +366,23 @@ export default class VM {
                 }
                 case OpCode.OP_SET_PROPERTY: {
                     let instance = this.peek(1);
+                    if (instance.type !== ValueType.OBJECT){
+                        this.runtimeError("Only instances have properties.");
+                        return InterpretResult.INTERPRET_RUNTIME_ERROR;
+                    }
                     let field = read_string();
                     instance.fields[field] = this.peek(0);
-                    // let value = this.pop();
+                    let value = this.pop();
                     this.pop();
-                    // this.push(value);
+                    this.push(value);
                     break;
                 }
                 case OpCode.OP_GET_PROPERTY: {
                     let instance = this.peek(0);
-                    //TODO check it is an instance
+                    if (instance.type !== ValueType.OBJECT){
+                        this.runtimeError("Only instances have properties.");
+                        return InterpretResult.INTERPRET_RUNTIME_ERROR;
+                    }
                     let name = read_string();
 
                     //check if the field exists
@@ -568,8 +578,8 @@ export default class VM {
                 }
                 case OpCode.OP_CLOSE_UPVALUE: {
                     //TODO need to test out the block and break;
-                    // this.closeUpvalues(vm.stackTop - 1);
-                    const locationOfLocals = this.currentFunctionStackLocation + 1;
+                    //I know that it is all of the variables on top of the stack except the first function
+                    const locationOfLocals = this.stack.length - 1;
                     this.closeUpvalues(locationOfLocals);
                     this.pop();
                     break;
@@ -577,8 +587,8 @@ export default class VM {
                 case OpCode.OP_RETURN:{
                     const value = this.pop();
                     //capture any necessary upvalues before the locals are discarded off the stack
-                    // const last = this.stack.length - 1;
-                    const locationOfLocals = this.currentFunctionStackLocation + 1;
+                    //I know that it is all of the variables on top of the stack except the first function
+                    const locationOfLocals = 1;
                     this.closeUpvalues(locationOfLocals);
                     this.frameCount--;
                     this.frames.pop();
@@ -605,7 +615,6 @@ export default class VM {
                 case OpCode.OP_INHERIT: {
                     let superClass = this.peek(1);
                     const subClass = this.peek(0);
-                    //TODO check if valid superClass
                     if (superClass.type !== ValueType.CLASS) {
                         this.runtimeError("Superclass must be a class.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
