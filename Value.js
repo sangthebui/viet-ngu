@@ -1,5 +1,9 @@
 export const ValueType = Object.freeze({
     PRIMITIVE: Symbol('PRIMITIVE'),
+    BOOLEAN: Symbol('BOOLEAN'),
+    NIL: Symbol('NIL'),
+    NUMBER: Symbol('NUMBER'),
+    STRING: Symbol('STRING'),
     BLOCK: Symbol('BLOCK'),
     CLOSURE: Symbol('CLOSURE'),
     CLASS: Symbol('CLASS'),
@@ -7,21 +11,9 @@ export const ValueType = Object.freeze({
     METHOD: Symbol('METHOD'),
     BOUND_METHOD: Symbol('BOUND_METHOD'),
     INITIALIZER: Symbol('INITIALIZER'),
+
 });
 
-
-export const makeClosure = (type, identifierName='<script>', enclosing=null) => {
-    let closureObj = {
-        arity: 0,
-        code: [],
-        lines: [],
-        ip: 0,
-        enclosing: enclosing,
-        type: type,
-        name: identifierName,
-        slots: {},
-    }
-};
 
 export default class Value {
     constructor(value, type=ValueType.PRIMITIVE){
@@ -29,11 +21,40 @@ export default class Value {
         this.type = type;
     }
 
-    get(){
-        return this.value;
+    static isValue(value){
+        switch(value.type){
+            case ValueType.PRIMITIVE:
+            case ValueType.BOOLEAN:
+            case ValueType.NIL:
+            case ValueType.NUMBER:
+            case ValueType.STRING:
+            case ValueType.BLOCK:
+            case ValueType.CLOSURE:
+            case ValueType.CLASS:
+            case ValueType.OBJECT:
+            case ValueType.METHOD:
+            case ValueType.BOUND_METHOD:
+            case ValueType.INITIALIZER:
+                return true;
+            default:
+                return false;
+        }
     }
 
-    set(value){
-        this.value = value;
+    static isString({value, type}){
+        return typeof value === 'string' && type === ValueType.STRING;
     }
+
+    static isNumber({value, type}){
+        return Number.isFinite(value) && type === ValueType.NUMBER;
+    }
+
+    static isBoolean({value}, type){
+        return typeof value === 'boolean' && type === ValueType.BOOLEAN;
+    }
+
+    static isNil({value, type}){
+        return value === null && type === ValueType.NIL;
+    }
+
 }
