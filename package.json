@@ -1,0 +1,16 @@
+{
+  "name": "cloxjs_only",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "type": "module",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/plugin-transform-modules-commonjs": "^7.18.2",
+    "jest": "^28.1.0"
+  }
+}
