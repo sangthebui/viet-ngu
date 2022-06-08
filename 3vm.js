@@ -1,10 +1,10 @@
 import Compiler, { OpCode } from './2compile.js';
 
-import Value, {ValueType} from "./Value.js";
+import {ObjectLox, ValueType} from "./Objects.js";
 
 const print = console.log;
 
-const InterpretResult  = Object.freeze({
+export const InterpretResult  = Object.freeze({
     INTERPRET_OK: Symbol('INTERPRET_OK'),
     INTERPRET_COMPILE_ERROR: Symbol('INTERPRET_COMPILE_ERROR'),
     INTERPRET_RUNTIME_ERROR: Symbol('INTERPRET_RUNTIME_ERROR'),
@@ -30,10 +30,7 @@ const newClosure = (closure) => {
     return newClosure;
 }
 
-const UpValue = {
-    location: new Value(10),
-    next: null,
-}
+
 
 
 const printValue = (value) => {
@@ -57,17 +54,20 @@ const printValue = (value) => {
     }
 };
 
- const openUpvalues = {
-     location: 0,
-     next: null,
- };
+//Memory management: stacks, globals, frame.closure (same as compiler.closure), frame.frameUpvalues,
+//compiler.closure
+
+
 
 export default class VM {
+    //TODO GC
     stack = []; // the array stack of Values
+    //TODO GC
     globals = {}; // list of globals variables during runtime
     frames = []; // list of call frames
     frameCount = 0;
     currentFunctionStackLocation = 0;
+    //TODO GC
     openUpvalues = null;
 
     runtimeError(message){
@@ -92,7 +92,7 @@ export default class VM {
     }
 
     isFalsey(value){
-        return Value.isNil(value) || (Value.isBoolean(value) && !value.value)
+        return ObjectLox.isNil(value) || (ObjectLox.isBoolean(value) && !value.value)
     }
 
     valuesEqual(aValue, bValue){
@@ -108,8 +108,6 @@ export default class VM {
         }
     }
 
-
-
     captureUpvalue(local){
         let prevUpvalue = null;
         let upvalue = this.openUpvalues;
@@ -122,7 +120,7 @@ export default class VM {
         if (upvalue !== null && upvalue.location === local){
             return upvalue;
         }
-
+        //TODO GC openUpvalue
         let createdUpvalue =  {
             location: local,
             next: upvalue, // createdUpvalue.next = upvalue;
@@ -222,7 +220,7 @@ export default class VM {
         }
 
         const receiver = this.peek(0);
-
+        //TODO GC BoundMethod
         const boundMethod = {
             type: ValueType.BOUND_METHOD,
             receiver,
@@ -292,15 +290,21 @@ export default class VM {
                     break;
                 }
                 case OpCode.OP_NIL: {
-                    this.push(new Value(null, ValueType.NIL));
+                    //TODO GC Value
+                    // this.push(new Value(null, ValueType.NIL));
+                    this.push(new ObjectLox(null, ValueType.NIL));
                     break;
                 }
                 case OpCode.OP_TRUE: {
-                    this.push(new Value(true, ValueType.BOOLEAN));
+                    //TODO GC Value
+                    // this.push(new Value(true, ValueType.BOOLEAN));
+                    this.push(new ObjectLox(true, ValueType.BOOLEAN));
                     break;
                 }
                 case OpCode.OP_FALSE: {
-                    this.push(new Value(false, ValueType.BOOLEAN));
+                    //TODO GC Value
+                    // this.push(new Value(false, ValueType.BOOLEAN));
+                    this.push(new ObjectLox(false, ValueType.BOOLEAN));
                     break;
                 }
                 case OpCode.OP_POP: this.pop(); break;
@@ -314,7 +318,6 @@ export default class VM {
                 case OpCode.OP_SET_LOCAL: {
                     //stack effect = 0
                     let key = read_byte();
-
                     const value = this.peek(0);
                     this.stack[key + this.currentFunctionStackLocation] = value;
                     break;
@@ -344,10 +347,12 @@ export default class VM {
                 case OpCode.OP_GET_UPVALUE: {
                     const slot = read_byte();
                     const upValue = frame.frameUpvalues[slot];
-                    let value = new Value(0);
+                    //TODO GC Value
+                    // let value = new Value(0);
+                    let value = new ObjectLox(0);
                     if (Number.isInteger(upValue.location)){
                         value = this.stack[upValue.location];
-                    } else if (Value.isValue(upValue.location)){
+                    } else if (ObjectLox.isValue(upValue.location)){
                         value = upValue.location;
                     }
                     //
@@ -358,9 +363,6 @@ export default class VM {
                 case OpCode.OP_SET_UPVALUE: {
                     const slot = read_byte();
                     const value = this.peek(0);
-                    // const stackLocation = frame.frameUpvalues[slot].location
-                    //find the upvalue location
-                    // this.stack[stackLocation] = value;
                     frame.frameUpvalues[slot].location = value;
                     break;
                 }
@@ -402,7 +404,9 @@ export default class VM {
                 case OpCode.OP_EQUAL: {
                     const b = this.pop();
                     const a = this.pop();
-                    const c = new Value(this.valuesEqual(a, b), ValueType.BOOLEAN);
+                    //TODO GC Value
+                    // const c = new Value(this.valuesEqual(a, b), ValueType.BOOLEAN);
+                    const c = new ObjectLox(this.valuesEqual(a, b), ValueType.BOOLEAN);
                     this.push(c);
                     break;
                 }
@@ -416,22 +420,27 @@ export default class VM {
                     break;
                 }
                 case OpCode.OP_GREATER: {
-                    if (Value.isNumber(this.peek(0)) &&
-                        Value.isNumber(this.peek(1))){
+                    if (ObjectLox.isNumber(this.peek(0)) &&
+                        ObjectLox.isNumber(this.peek(1))){
                         const a = this.pop();
                         const b = this.pop();
-                        this.push(new Value(b.value > a.value, ValueType.NUMBER));                    } else {
+                        //TODO GC Value
+                        this.push(new ObjectLox(b.value > a.value, ValueType.NUMBER));                    } else {
+                        // this.push(new Value(b.value > a.value, ValueType.NUMBER));                    } else {
                         this.runtimeError("Operands must be numbers.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
                     }
                     break;
                 }
                 case OpCode.OP_LESS: {
-                    if (Value.isNumber(this.peek(0)) &&
-                        Value.isNumber(this.peek(1))){
+                    if (ObjectLox.isNumber(this.peek(0)) &&
+                        ObjectLox.isNumber(this.peek(1))){
                         const a = this.pop();
                         const b = this.pop();
-                        this.push(new Value(b.value < a.value, ValueType.NUMBER));
+                        //TODO GC Value
+                        // this.push(new Value(b.value < a.value, ValueType.NUMBER));
+                        this.push(new ObjectLox(b.value < a.value, ValueType.NUMBER));
+
                     } else {
                         this.runtimeError("Operands must be numbers.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
@@ -439,14 +448,18 @@ export default class VM {
                     break;
                 }
                 case OpCode.OP_ADD: {
-                    if (Value.isString(this.peek(0)) &&
-                        Value.isString(this.peek(1)) ){
+                    if (ObjectLox.isString(this.peek(0)) &&
+                        ObjectLox.isString(this.peek(1)) ){
                         const a = this.pop();
                         const b = this.pop();
-                        this.push(new Value(b.value + a.value), ValueType.STRING);
-                    } else if (Value.isNumber(this.peek(0)) &&
-                        Value.isNumber(this.peek(1))){
-                        this.push(new Value(this.pop().value + this.pop().value, ValueType.NUMBER));
+                        //TODO GC Value
+                        // this.push(new Value(b.value + a.value), ValueType.STRING);
+                        this.push(new ObjectLox(b.value + a.value), ValueType.STRING);
+                    } else if (ObjectLox.isNumber(this.peek(0)) &&
+                        ObjectLox.isNumber(this.peek(1))){
+                        //TODO GC Value
+                        // this.push(new Value(this.pop().value + this.pop().value, ValueType.NUMBER));
+                        this.push(new ObjectLox(this.pop().value + this.pop().value, ValueType.NUMBER));
                     } else {
                         this.runtimeError("Operands must be two numbers or two strings.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
@@ -454,20 +467,24 @@ export default class VM {
                     break;
                 }
                 case OpCode.OP_SUBTRACT: {
-                    if (Value.isNumber(this.peek(0)) &&
-                        Value.isNumber(this.peek(1))){
+                    if (ObjectLox.isNumber(this.peek(0)) &&
+                        ObjectLox.isNumber(this.peek(1))){
                         const a = this.pop();
                         const b = this.pop();
-                        this.push(new Value(b.value - a.value, ValueType.NUMBER));                    } else {
+                        //TODO GC Value
+                        // this.push(new Value(b.value - a.value, ValueType.NUMBER));                    } else {
+                        this.push(new ObjectLox(b.value - a.value, ValueType.NUMBER));                    } else {
                         this.runtimeError("Operands must be numbers.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
                     }
                     break;
                 }
                 case OpCode.OP_MULTIPLY: {
-                    if (Value.isNumber(this.peek(0)) &&
-                        Value.isNumber(this.peek(1))){
-                        this.push(new Value(this.pop().value * this.pop().value, ValueType.NUMBER));
+                    if (ObjectLox.isNumber(this.peek(0)) &&
+                        ObjectLox.isNumber(this.peek(1))){
+                        //TODO GC Value
+                        // this.push(new Value(this.pop().value * this.pop().value, ValueType.NUMBER));
+                        this.push(new ObjectLox(this.pop().value * this.pop().value, ValueType.NUMBER));
                     } else {
                         this.runtimeError("Operands must be numbers.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
@@ -475,11 +492,13 @@ export default class VM {
                     break;
                 }
                 case OpCode.OP_DIVIDE: {
-                    if (Value.isNumber(this.peek(0)) &&
-                        Value.isNumber(this.peek(1))){
+                    if (ObjectLox.isNumber(this.peek(0)) &&
+                        ObjectLox.isNumber(this.peek(1))){
                         const a = this.pop();
                         const b = this.pop();
-                        this.push(new Value(b.value / a.value, ValueType.NUMBER));
+                        //TODO GC Value
+                        // this.push(new Value(b.value / a.value, ValueType.NUMBER));
+                        this.push(new ObjectLox(b.value / a.value, ValueType.NUMBER));
                     } else {
                         this.runtimeError("Operands must be numbers.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
@@ -488,17 +507,21 @@ export default class VM {
                 }
                 case OpCode.OP_NOT: {
                     let temp = this.pop();
-                    this.push(new Value(this.isFalsey(temp), ValueType.BOOLEAN));
+                    //TODO GC Value
+                    // this.push(new Value(this.isFalsey(temp), ValueType.BOOLEAN));
+                    this.push(new ObjectLox(this.isFalsey(temp), ValueType.BOOLEAN));
                     break;
                 }
                 case OpCode.OP_NEGATE: {
                     let value = this.peek(0);
-                    if (Value.isNumber(value.value)){
+                    if (ObjectLox.isNumber(value.value)){
                         this.runtimeError("Operand must be a number.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
                     }
                     value = this.pop();
-                    this.push(new Value(-value.value, ValueType.NUMBER));
+                    //TODO GC Value
+                    // this.push(new Value(-value.value, ValueType.NUMBER));
+                    this.push(new ObjectLox(-value.value, ValueType.NUMBER));
                     break;
                 }
                 case OpCode.OP_PRINT: {
@@ -555,6 +578,7 @@ export default class VM {
                     break;
                 }
                 case OpCode.OP_CLOSURE: {
+                    //TODO GC Closure
                     let closure = newClosure(read_byte()); //create a new closure
                     //capture the upvalues
                     //isLocal means that the upvalues is a local value
@@ -620,6 +644,7 @@ export default class VM {
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
                     }
                     //add all the superclass methods to subclass
+                    //TODO GC methods object
                     subClass.methods = {...subClass.methods, ...superClass.methods};
                     this.pop();
                     break;
@@ -636,8 +661,7 @@ export default class VM {
                 default:
                     print('Unknown instruction: ' + instruction);
                     return InterpretResult.INTERPRET_RUNTIME_ERROR;
-            }
-
+            } //end switch
         } //end while
 
         return InterpretResult.INTERPRET_OK;

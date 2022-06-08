@@ -1,11 +1,9 @@
 
 import Scanner, { TokenType } from "./1scanner.js";
 
-import Value, { ValueType } from './Value.js';
-
+import { ObjectLox, ValueType } from "./Objects.js";
 
 let print = console.log;
-
 
 export const CompileType = Object.freeze({
     BLOCK: Symbol('BLOCK'),
@@ -72,10 +70,7 @@ export const Precedence = Object.freeze({
     PREC_PRIMARY: 10,
 });
 
-const MAX_LOCAL = 100000000;
-const MAX_CONSTANTS = MAX_LOCAL;
 const UINT8_COUNT  = Number.MAX_SAFE_INTEGER;
-
 
 export default class Compiler {
     //the current parser
@@ -88,7 +83,7 @@ export default class Compiler {
     // the scanner that is doing the parsing
     scanner = null;
     allTokens = [];
-
+    //TODO GC => object
     current = {
         arity: 0,
         locals: [{
@@ -185,9 +180,8 @@ export default class Compiler {
     error(message){
         this.errorAt(this.parser.previous, message);
     }
-
     synchronize(){
-        if (this.parser.previous.type == TokenType.TOKEN_SEMICOLON) return;
+        if (this.parser.previous.type === TokenType.TOKEN_SEMICOLON) return;
         switch (this.parser.current.type) {
             case TokenType.TOKEN_CLASS:
             case TokenType.TOKEN_FUN:
@@ -205,7 +199,6 @@ export default class Compiler {
 
         this.advance();
     }
-
     advance(){
         this.parser.previous = this.parser.current;
 
@@ -244,7 +237,7 @@ export default class Compiler {
         if (this.current.localCount === UINT8_COUNT){
             this.error("Too many local variables in function.");
         }
-
+        //TODO GC => locals
         this.current.locals[this.current.localCount++] = {
             name,
             depth: -1,
@@ -252,7 +245,9 @@ export default class Compiler {
         };
     }
     identifierConstant(identifierName){
-        return this.addConstant(new Value(identifierName, ValueType.STRING));
+        //TODO GC => Value
+        // return this.addConstant(new Value(identifierName, ValueType.STRING));
+        return this.addConstant(new ObjectLox(identifierName, ValueType.STRING))
     }
     writeChunk(byteCode, line){
         this.current.code.push(byteCode);
@@ -303,7 +298,6 @@ export default class Compiler {
 
         return jump;
     }
-
     patchJump(offset){
         const oneJump = 1;
 
@@ -312,10 +306,8 @@ export default class Compiler {
         if (jump > UINT8_COUNT){
             this.error('Too much code to jump over.');
         }
-
         this.current.code[offset] = jump;
     }
-
     parsePrecedence(precedence){
         //consume the first token
         this.advance();
@@ -373,7 +365,7 @@ export default class Compiler {
             this.error('Too many closure variables in function.');
             return 0;
         }
-
+        //TODO GC => compiler upvalues
         compiler.upvalues[upvalueCount] = {
             isLocal,
             index,
@@ -466,7 +458,6 @@ export default class Compiler {
             //defineVariable: mark the locals with the scopeDepth
             this.current.locals[ this.current.localCount - 1 ].depth = this.current.scopeDepth;
 
-
         } else {
             //compile the initializer, either there is an expression or there is none
             //and we set it to NIL
@@ -489,10 +480,14 @@ export default class Compiler {
     number(){
         //payload is always a string
         const num = parseInt(this.parser.previous.payload);
-        this.emitConstant(new Value(num, ValueType.NUMBER));
+        //TODO GC new Value
+        // this.emitConstant(new Value(num, ValueType.NUMBER));
+        this.emitConstant(new ObjectLox(num, ValueType.NUMBER));
     }
     string(){
-        this.emitConstant( new Value(this.parser.previous.payload, ValueType.STRING));
+        //TODO GC new Value
+        // this.emitConstant( new ObjectLox(this.parser.previous.payload, ValueType.STRING));
+        this.emitConstant( new ObjectLox(this.parser.previous.payload, ValueType.STRING));
     }
     unary(){
         const operatorType = this.parser.previous.type;
@@ -586,7 +581,6 @@ export default class Compiler {
             this.error("can't use 'this' outside of a class.");
             return;
         }
-
         this.identifier(false);
     }
     super_(){
@@ -632,7 +626,6 @@ export default class Compiler {
     call(){
         //all the values to the argument are on the stack
         let argCount = this.argumentList();
-
         this.emitBytes(OpCode.OP_CALL, argCount);
     }
 
@@ -668,12 +661,10 @@ export default class Compiler {
                     //markInitialized
                     this.current.locals[ this.current.localCount - 1 ].depth = this.current.scopeDepth;
 
-
                 } else {
                     //defineVariable
                     this.emitBytes(OpCode.OP_DEFINE_GLOBAL, identifierConstantIndex);
                 }
-
 
             } while (this.match(TokenType.TOKEN_COMMA));
             //reverse the order the parameters are stored because of the order arguments are stored in the stack as last items are at the top
@@ -707,14 +698,14 @@ export default class Compiler {
             //markInitialized
             this.current.locals[ this.current.localCount - 1 ].depth = this.current.scopeDepth;
         }
-
+        //TODO GC Local
         // start to compile function body
         let firstLocal = {
             name: '',
             depth: 0,
             isCaptured: false,
         };
-
+        //TODO GC Closure
         let closure = {
             arity: 0,
             locals: [firstLocal], //only compile locals
@@ -770,6 +761,7 @@ export default class Compiler {
         const identifierName = this.parser.previous.payload;
         const identifierConstantIndex = this.identifierConstant(identifierName);
 
+        //TODO GC Local
         // start to compile function body
         let firstLocal = {
             name: 'this',
@@ -777,6 +769,7 @@ export default class Compiler {
             isCaptured: false,
         };
 
+        //TODO GC Closure
         // compile the function body as a method
         let closure = {
             arity: 0,
@@ -819,7 +812,6 @@ export default class Compiler {
 
         this.emitBytes(OpCode.OP_CLOSURE, newClosure);
 
-
         //capture upvalues
         for (let i = 0; i < newClosure.upvalueCount; i++) {
             this.emitByte(closure.upvalues[i].isLocal ? 1 : 0);
@@ -836,6 +828,7 @@ export default class Compiler {
         const classIdentifier = this.parser.previous.payload;
         let classConstantIndex = this.identifierConstant(classIdentifier);
 
+        //TODO GC Klass object
         let klass = {
             name: classIdentifier,
             type: ValueType.CLASS,
@@ -871,6 +864,7 @@ export default class Compiler {
             this.emitBytes(OpCode.OP_DEFINE_GLOBAL, classConstantIndex);
         }
 
+        //TODO GC CompilerClass
         //handle methods
         const compilerClass = {
             enclosing: this.currentClass,
