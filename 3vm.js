@@ -1,6 +1,10 @@
 import Compiler, { OpCode } from './2compile.js';
 
-import {ObjectLox, ValueType} from "./Objects.js";
+import {
+    ObjectLox, ValueType,
+    newKlass, newMethod, newInstance,
+    newFrame, newClosure
+} from "./Objects.js";
 
 const print = console.log;
 
@@ -12,26 +16,7 @@ export const InterpretResult  = Object.freeze({
 
 const FRAMES_MAX = 256;
 
-const newInstance = (klass) => {
-    return {
-        type: ValueType.OBJECT,
-        klass,
-        fields: {},
-    };
-};
-let counter = 0;
-const newClosure = (closure) => {
-    const newClosure = {
-        ...closure,
-        frameUpvalues: {},
-        id: counter,
-    }
-    counter++;
-    return newClosure;
-}
-
-
-
+//TODO remove ObjectLox for primitive values
 
 const printValue = (value) => {
     switch(value.type){
@@ -54,10 +39,8 @@ const printValue = (value) => {
     }
 };
 
-//Memory management: stacks, globals, frame.closure (same as compiler.closure), frame.frameUpvalues,
+//Memory management: stacks, globals, frame.closure (same as compiler.closure), frame.closure.frameUpvalues,
 //compiler.closure
-
-
 
 export default class VM {
     //TODO GC
@@ -70,8 +53,12 @@ export default class VM {
     //TODO GC
     openUpvalues = null;
 
+    constructor() {
+        this.defineNative('clock', this.clockNative);
+    }
+
     runtimeError(message){
-        print(message);
+        print(`Runtime error: ${message}`);
     }
 
     push(value){
@@ -91,8 +78,24 @@ export default class VM {
         return this.stack[dist];
     }
 
+    defineNative(name, closure){
+        this.globals[name] = {
+            type: ValueType.NATIVE_FUNCTION,
+            closure
+        };
+    }
+
+    clockNative(argCount, value){
+        //wrap the clock value inside an ObjectLox
+        return new ObjectLox(new Date() / 1000, ValueType.NUMBER);
+    }
+
     isFalsey(value){
-        return ObjectLox.isNil(value) || (ObjectLox.isBoolean(value) && !value.value)
+        const isNil = ObjectLox.isNil(value) ;
+        const isBool = ObjectLox.isBoolean(value);
+        const isFalse =  isNil  || (isBool && !value.value);
+
+      return isFalse;
     }
 
     valuesEqual(aValue, bValue){
@@ -159,13 +162,12 @@ export default class VM {
            const instance =  newInstance(callee);
            //push onto the stack before all the arguments
             const position = this.stack.length - 1 - argCount;
-            this.stack[position] = instance; //put the object after the class before the arguments
+            this.stack[position] = instance;//put the object where the class before the arguments
 
-            let initializer = callee.methods['init'];
+            let initializer = newMethod(callee.methods['init']);
 
             if (initializer !== undefined && initializer !== null){
                 //binding this to each method
-                // initializer.slots['this'] = instance;
                 return this.call(initializer, argCount);
 
             } else if (argCount !== 0){
@@ -185,6 +187,12 @@ export default class VM {
             //we are calling function
             return this.call(callee, argCount);
         }
+        else if (callee.type === ValueType.NATIVE_FUNCTION){
+            const result = callee.closure(argCount, this.stack.length - 1 - argCount);
+            this.stack = this.stack.slice(0, argCount + 1); // remove the argCount and the function
+            this.push(result);
+            return true;
+        }
 
         return false;
     }
@@ -201,13 +209,16 @@ export default class VM {
             return false;
         }
 
-
-        if (closure.type === ValueType.CLOSURE || closure.type === ValueType.METHOD){
-            closure.ip = 0; //reset the frame IP when it gets call multiple times.
-        }
+        // if (closure.type === ValueType.CLOSURE ||
+        //     closure.type === ValueType.METHOD ||
+        //     closure.type === ValueType.INITIALIZER){
+        //     closure.ip = 0; //reset the frame IP when it gets call multiple times.
+        // }
 
         //convert the call frames stack to a push and pop action
-        this.frames.push(closure);
+        let stackSlot = this.stack.length - 1 - argCount;
+        let frame = newFrame(closure, 0, stackSlot);
+        this.frames.push(frame);
         this.frameCount++;
 
         return true;
@@ -257,7 +268,7 @@ export default class VM {
             return false;
         }
 
-        let method = instance.klass.methods[methodName];
+        let method = newMethod(instance.klass.methods[methodName]);
         if (method === undefined || method === null){
             this.runtimeError(`Undefined property ${methodName}`);
             return false;
@@ -270,14 +281,14 @@ export default class VM {
 
         function read_constant(){
             const constantIndex = read_byte();
-            return frame.constants[constantIndex];
+            return frame.closure.constants[constantIndex];
         }
         function read_string(){
             const constant = read_constant();
             return constant.value;
         }
         function read_byte(){
-            return frame.code[frame.ip++];
+            return frame.closure.code[frame.ip++];
         }
 
         while(true){
@@ -311,7 +322,7 @@ export default class VM {
                 case OpCode.OP_GET_LOCAL: {
                     //stack effect = - 1
                     const key = read_byte();
-                    const value = this.stack[key + this.currentFunctionStackLocation];
+                    const value = this.stack[key + frame.stackSlot];
                     this.push(value);
                     break;
                 }
@@ -319,17 +330,23 @@ export default class VM {
                     //stack effect = 0
                     let key = read_byte();
                     const value = this.peek(0);
-                    this.stack[key + this.currentFunctionStackLocation] = value;
+                    this.stack[key + frame.stackSlot] = value;
                     break;
                 }
                 case OpCode.OP_DEFINE_GLOBAL: {
                     const key = read_string();
-                    const value = this.pop();
+                    let value = this.pop();
+                    //check if it is a callable and create a new one
                     this.globals[key] = value;
                     break;
                 }
                 case OpCode.OP_SET_GLOBAL: {
                     const key = read_string();
+                    //value should already exist in global
+                    if (this.globals[key] === undefined){
+                        this.runtimeError(`Undefined variable '${key}'`);
+                        return InterpretResult.INTERPRET_RUNTIME_ERROR;
+                    }
                     const value = this.peek(0);
                     this.globals[key] = value;
                     break;
@@ -346,7 +363,7 @@ export default class VM {
                 }
                 case OpCode.OP_GET_UPVALUE: {
                     const slot = read_byte();
-                    const upValue = frame.frameUpvalues[slot];
+                    const upValue = frame.closure.frameUpvalues[slot];
                     //TODO GC Value
                     // let value = new Value(0);
                     let value = new ObjectLox(0);
@@ -363,7 +380,7 @@ export default class VM {
                 case OpCode.OP_SET_UPVALUE: {
                     const slot = read_byte();
                     const value = this.peek(0);
-                    frame.frameUpvalues[slot].location = value;
+                    frame.closure.frameUpvalues[slot].location = value;
                     break;
                 }
                 case OpCode.OP_SET_PROPERTY: {
@@ -425,7 +442,7 @@ export default class VM {
                         const a = this.pop();
                         const b = this.pop();
                         //TODO GC Value
-                        this.push(new ObjectLox(b.value > a.value, ValueType.NUMBER));                    } else {
+                        this.push(new ObjectLox(b.value > a.value, ValueType.BOOLEAN));                    } else {
                         // this.push(new Value(b.value > a.value, ValueType.NUMBER));                    } else {
                         this.runtimeError("Operands must be numbers.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
@@ -439,7 +456,8 @@ export default class VM {
                         const b = this.pop();
                         //TODO GC Value
                         // this.push(new Value(b.value < a.value, ValueType.NUMBER));
-                        this.push(new ObjectLox(b.value < a.value, ValueType.NUMBER));
+                        const bool = b.value < a.value;
+                        this.push(new ObjectLox(bool, ValueType.BOOLEAN));
 
                     } else {
                         this.runtimeError("Operands must be numbers.");
@@ -537,7 +555,10 @@ export default class VM {
                 case OpCode.OP_JUMP_IF_FALSE: {
                     const offset = read_byte();
                     const value = this.peek(0);
-                    if(this.isFalsey(value)) frame.ip += offset;
+                    const isFalse = this.isFalsey(value);
+                    if(isFalse) {
+                        frame.ip += offset;
+                    }
                     break;
                 }
                 case OpCode.OP_LOOP: {
@@ -553,7 +574,6 @@ export default class VM {
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
                     }
 
-                    this.currentFunctionStackLocation = this.stack.length - 1 - argCount;
                     frame = this.frames[this.frameCount - 1];
                     break;
                 }
@@ -589,12 +609,12 @@ export default class VM {
                         let isLocal = read_byte();
                         let index = read_byte();
                         if ( isLocal ) {
-                            let local = this.currentFunctionStackLocation + index;
+                            let local = frame.stackSlot + index;
                             // const value = this.stack[local];
 
                             closure.frameUpvalues[i] = this.captureUpvalue(local);
                         } else {
-                            closure.frameUpvalues[i] = frame.frameUpvalues[index];
+                            closure.frameUpvalues[i] = frame.closure.frameUpvalues[index];
                         }
                     }
                     this.push(closure);
@@ -625,14 +645,16 @@ export default class VM {
 
                     //remove the previous frame locals here
                     //argCount + locals;
-                    this.popN(frame.locals.length);
+                    const lastFunctionStack = this.stack.length - frame.stackSlot;
+                    this.popN(lastFunctionStack);
                     this.push(value);
 
                     frame = this.frames[this.frameCount -1];//go back to the previous frame.
                     break;
                 }
                 case OpCode.OP_CLASS: {
-                    const klass = read_byte();
+                    //read byte gets from constant table, we need to create a new object
+                    const klass = newKlass(read_byte());
                     this.push(klass);
                     break;
                 }
@@ -651,8 +673,8 @@ export default class VM {
                 }
                 case OpCode.OP_METHOD: {
                     const methodName = read_string();
-                    const method = this.peek(0);
-                    const klass = this.peek(1);
+                    const method = newMethod(this.peek(0)); //we want a cop of the new method.
+                    const klass = this.peek(1); //we want the same klass on the stack, not a new copy
                     klass.methods[methodName] = method;
                     this.pop();
 
@@ -676,7 +698,7 @@ export default class VM {
         }
 
         //calling the top level script function.
-        this.currentFunctionStackLocation = this.push(closure);
+        this.push(closure);
         this.call(closure, 0);
         //
         return this.run(); //calls the first CallFrame and begins to execute its code.

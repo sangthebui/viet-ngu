@@ -268,22 +268,22 @@ export default class Scanner {
             return this.number();
         }
         switch(character){
-            case '(': return this.makeToken(TokenType.TOKEN_LEFT_PAREN);
-            case ')': return this.makeToken(TokenType.TOKEN_RIGHT_PAREN);
-            case '{': return this.makeToken(TokenType.TOKEN_LEFT_BRACE);
-            case '}': return this.makeToken(TokenType.TOKEN_RIGHT_BRACE);
-            case ';': return this.makeToken(TokenType.TOKEN_SEMICOLON);
-            case ',': return this.makeToken(TokenType.TOKEN_COMMA);
-            case '.': return this.makeToken(TokenType.TOKEN_DOT);
-            case '-': return this.makeToken(TokenType.TOKEN_MINUS);
-            case '+': return this.makeToken(TokenType.TOKEN_PLUS);
-            case '/': return this.makeToken(TokenType.TOKEN_SLASH);
-            case '*': return this.makeToken(TokenType.TOKEN_STAR);
+            case '(': return this.makeToken(TokenType.TOKEN_LEFT_PAREN, '(');
+            case ')': return this.makeToken(TokenType.TOKEN_RIGHT_PAREN, ')');
+            case '{': return this.makeToken(TokenType.TOKEN_LEFT_BRACE, '{');
+            case '}': return this.makeToken(TokenType.TOKEN_RIGHT_BRACE, '}');
+            case ';': return this.makeToken(TokenType.TOKEN_SEMICOLON, ';');
+            case ',': return this.makeToken(TokenType.TOKEN_COMMA, ',');
+            case '.': return this.makeToken(TokenType.TOKEN_DOT, '.');
+            case '-': return this.makeToken(TokenType.TOKEN_MINUS, '-');
+            case '+': return this.makeToken(TokenType.TOKEN_PLUS, '+');
+            case '/': return this.makeToken(TokenType.TOKEN_SLASH, '/');
+            case '*': return this.makeToken(TokenType.TOKEN_STAR, '*');
             /* one or two characters together*/
-            case '!': return this.makeToken(this.match('=')? TokenType.TOKEN_BANG_EQUAL: TokenType.TOKEN_BANG);
-            case '=': return this.makeToken(this.match('=')? TokenType.TOKEN_EQUAL_EQUAL: TokenType.TOKEN_EQUAL);
-            case '<': return this.makeToken(this.match('=')? TokenType.TOKEN_LESS_EQUAL: TokenType.TOKEN_LESS);
-            case '>': return this.makeToken(this.match('=')? TokenType.TOKEN_GREATER_EQUAL: TokenType.TOKEN_GREATER);
+            case '!': return this.makeToken(this.match('=')? TokenType.TOKEN_BANG_EQUAL: TokenType.TOKEN_BANG, '!');
+            case '=': return this.makeToken(this.match('=')? TokenType.TOKEN_EQUAL_EQUAL: TokenType.TOKEN_EQUAL, '=');
+            case '<': return this.makeToken(this.match('=')? TokenType.TOKEN_LESS_EQUAL: TokenType.TOKEN_LESS, '<');
+            case '>': return this.makeToken(this.match('=')? TokenType.TOKEN_GREATER_EQUAL: TokenType.TOKEN_GREATER, '>');
             case '"': {
                 return this.string();
             }

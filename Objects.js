@@ -14,6 +14,7 @@ export const ValueType = Object.freeze({
     STRING: Symbol('STRING'),
     BLOCK: Symbol('BLOCK'),
     CLOSURE: Symbol('CLOSURE'),
+    NATIVE_FUNCTION: Symbol('NATIVE_FUNCTION'),
     CLASS: Symbol('CLASS'),
     OBJECT: Symbol('OBJECT'),
     METHOD: Symbol('METHOD'),
@@ -24,8 +25,61 @@ export const ValueType = Object.freeze({
     FRAMEUPVALUE: Symbol('FRAMEUPVALUE'),
     OPENUPVALUE: Symbol('OPENUPVALUE'),
     COMPILERCLASS: Symbol('COMPILERCLASS'),
-
 });
+
+export const newClosure = (closure) => {
+    const newClosure = {
+        ...closure,
+        frameUpvalues: {},
+    }
+    return newClosure;
+}
+
+export const newKlass = (klass) => {
+    const newKlass = {
+        ...klass,
+    }
+    return newKlass;
+}
+
+export const newObject = (object) => {
+    const newObject = {
+        ...object,
+    }
+
+    return newObject;
+}
+
+export const newMethod = (method) => {
+    if (!method){
+        return undefined;
+    }
+    const newMethod = {
+        ...method,
+    }
+
+    return newMethod;
+}
+
+export const newInstance = (klass) => {
+    const newInst = {
+        type: ValueType.OBJECT,
+        klass,
+        fields: {},
+    };
+
+    return newInst;
+};
+
+export const newFrame = (closure, ip, stackSlot) => {
+    let frame = {
+        closure: closure,
+        ip: ip,
+        stackSlot: stackSlot,
+        frameUpvalues: {}
+    }
+    return frame;
+}
 
 export class ObjectLox {
     constructor(value, type, isMarked=false) {

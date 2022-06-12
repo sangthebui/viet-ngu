@@ -159,6 +159,8 @@ export default class Compiler {
     //region error handling and parsing stuff
     // chunk manipulation and emitting bytecode
     errorAt(token, message){
+        if (this.parser.panicMode) return;
+
         this.parser.panicMode = true;
         let outputError = `[line ${token.line}] Error`;
 
@@ -167,7 +169,7 @@ export default class Compiler {
         } else if (token.type === TokenType.TOKEN_ERROR){
             //Do nothing
         } else {
-            outputError += ` at ${token.payload}`;
+            outputError += ` at '${token.payload}' `;
         }
 
         outputError += `: ${message}`;
