@@ -1,7 +1,7 @@
 import { readFile} from 'fs/promises';
 import VM from "../../3vm.js";
 
-const filePath = './unused_later_closure.lox';
+const filePath = './method.lox';
 
 async function processEachFile(filePath){
   const data = await readFile(filePath);
@@ -10,4 +10,5 @@ async function processEachFile(filePath){
   vm.interpret(sourceCode);
 }
 
-processEachFile(filePath).then(output => {});
+processEachFile(filePath).then(_ => {
+});

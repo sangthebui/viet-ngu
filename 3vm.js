@@ -470,7 +470,7 @@ export default class VM {
                         const b = this.pop();
                         //TODO GC Value
                         // this.push(new Value(b.value + a.value), ValueType.STRING);
-                        this.push(new ObjectLox(b.value + a.value), ValueType.STRING);
+                        this.push(new ObjectLox(b.value + a.value, ValueType.STRING));
                     } else if (ObjectLox.isNumber(this.peek(0)) &&
                         ObjectLox.isNumber(this.peek(1))){
                         //TODO GC Value
