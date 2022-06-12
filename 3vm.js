@@ -152,48 +152,46 @@ export default class VM {
 
     callValue(callee, argCount){
 
-        if (!callee) {
-            this.runtimeError('Can only call functions and classes');
-            return false;
-        }
-
-        //check for class
-        if (callee.type === ValueType.CLASS){
-           const instance =  newInstance(callee);
-           //push onto the stack before all the arguments
-            const position = this.stack.length - 1 - argCount;
-            this.stack[position] = instance;//put the object where the class before the arguments
-
-            let initializer = newMethod(callee.methods['init']);
-
-            if (initializer !== undefined && initializer !== null){
+        switch(callee.type){
+            case ValueType.BOUND_METHOD: {
                 //binding this to each method
-                return this.call(initializer, argCount);
+                let location = this.stack.length - argCount - 1;
+                this.stack[location] = callee.receiver;
 
-            } else if (argCount !== 0){
-                this.runtimeError(`Expected 0 arguments but got ${argCount}`);
-                return false;
+                return this.call(callee.method, argCount);
             }
+            case ValueType.CLASS: {
+                const instance =  newInstance(callee);
+                //push onto the stack before all the arguments
+                const position = this.stack.length - 1 - argCount;
+                this.stack[position] = instance;//put the object where the class before the arguments
 
-            return true;
-        } else if (callee.type === ValueType.BOUND_METHOD) {
-            //binding this to each method
-            let location = this.stack.length - argCount - 1;
-            this.stack[location] = callee.receiver;
+                let initializer = newMethod(callee.methods['init']);
 
-            return this.call(callee.method, argCount);
+                if (initializer !== undefined && initializer !== null){
+                    //binding this to each method
+                    return this.call(initializer, argCount);
 
-        } else if (callee.type === ValueType.CLOSURE){
-            //we are calling function
-            return this.call(callee, argCount);
+                } else if (argCount !== 0){
+                    this.runtimeError(`Expected 0 arguments but got ${argCount}`);
+                    return false;
+                }
+
+                return true;
+            }
+            case ValueType.CLOSURE: {
+                //we are calling function
+                return this.call(callee, argCount);
+            }
+            case ValueType.NATIVE_FUNCTION: {
+                const result = callee.closure(argCount, this.stack.length - 1 - argCount);
+                this.stack = this.stack.slice(0, argCount + 1); // remove the argCount and the function
+                this.push(result);
+                return true;
+            }
+            default: break;
         }
-        else if (callee.type === ValueType.NATIVE_FUNCTION){
-            const result = callee.closure(argCount, this.stack.length - 1 - argCount);
-            this.stack = this.stack.slice(0, argCount + 1); // remove the argCount and the function
-            this.push(result);
-            return true;
-        }
-
+        this.runtimeError('Can only call functions and classes');
         return false;
     }
 
