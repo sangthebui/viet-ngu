@@ -70,7 +70,7 @@ export const Precedence = Object.freeze({
     PREC_PRIMARY: 10,
 });
 
-const UINT8_COUNT  = Number.MAX_SAFE_INTEGER;
+const UINT8_COUNT  = 255;
 
 export default class Compiler {
     //the current parser

@@ -20,6 +20,9 @@ const FRAMES_MAX = 256;
 
 const printValue = (value) => {
     switch(value.type){
+        case ValueType.NIL:
+            print("nil");
+            break;
         case ValueType.PRIMITIVE:
             print(value.value);
             break;
@@ -31,6 +34,9 @@ const printValue = (value) => {
             break;
         case ValueType.OBJECT:
             print(`instance of ${value.klass.name}`);
+            break;
+        case ValueType.NATIVE_FUNCTION:
+            print("<native fn>");
             break;
         default:
             print(value.value);
