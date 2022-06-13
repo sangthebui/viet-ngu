@@ -38,6 +38,10 @@ const printValue = (value) => {
         case ValueType.NATIVE_FUNCTION:
             print("<native fn>");
             break;
+        case ValueType.METHOD:
+        case ValueType.BOUND_METHOD:
+            print("<fn method>");
+            break;
         default:
             print(value.value);
             break;
@@ -262,7 +266,8 @@ export default class VM {
 
         //check the fields before the method
         let field = instance.fields[methodName];
-        if (field !== undefined && field !== null){
+        if (field !== undefined && field !== null &&
+            field.toString().indexOf('[native code]') === -1){ //JS hack to check against prototype code
             // this.stack = field
             return this.callValue(field, argCount);
         }
@@ -273,7 +278,8 @@ export default class VM {
         }
 
         let method = newMethod(instance.klass.methods[methodName]);
-        if (method === undefined || method === null){
+        if (method === undefined || method === null ||
+            method.toString().indexOf('[native code]') !== -1){ //JS hack to check against prototype code
             this.runtimeError(`Undefined property ${methodName}`);
             return false;
         }
@@ -536,7 +542,7 @@ export default class VM {
                 }
                 case OpCode.OP_NEGATE: {
                     let value = this.peek(0);
-                    if (ObjectLox.isNumber(value.value)){
+                    if (!ObjectLox.isNumber(value)){
                         this.runtimeError("Operand must be a number.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
                     }
