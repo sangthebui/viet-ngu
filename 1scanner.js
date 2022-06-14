@@ -144,6 +144,69 @@ export default class Scanner {
         return TokenType.TOKEN_IDENTIFIER;
     };
 
+    vietIdentifierType(){
+        const currentCharacter = this.source.charAt(this.start);
+        switch(currentCharacter){
+            case 'b': return this.checkKeyword('bien', TokenType.TOKEN_VAR);
+            case 'c': return this.checkKeyword('cho', TokenType.TOKEN_FOR);
+            case 'd': return this.checkKeyword('dung', TokenType.TOKEN_TRUE);
+            case 'h': {
+                if (this.current - this.start > 1){
+                    const innerCharacter = this.source.charAt(this.start + 1);
+                    switch (innerCharacter){
+                        case 'a': return this.checkKeyword('ham', TokenType.TOKEN_FUN);
+                        case 'o': return this.checkKeyword('hoac', TokenType.TOKEN_OR);
+                    }
+                }
+                break;
+            }
+            case 'k': return this.checkKeyword('khac', TokenType.TOKEN_ELSE);
+            case 'l': {
+                if (this.current - this.start > 1){
+                    const innerCharacter = this.source.charAt(this.start + 1);
+                    switch (innerCharacter){
+                        case 'o': return this.checkKeyword('lop', TokenType.TOKEN_CLASS);
+                        case 'u': return this.checkKeyword('luc', TokenType.TOKEN_WHILE);
+                    }
+                }
+                break;
+            }
+            case 'n': {
+                if (this.current - this.start > 1){
+                    const innerCharacter = this.source.charAt(this.start + 1);
+                    switch (innerCharacter){
+                        case 'a': return this.checkKeyword('nay', TokenType.TOKEN_THIS);
+                        case 'e': return this.checkKeyword('neu', TokenType.TOKEN_IF);
+                        case 'i': return this.checkKeyword('nil', TokenType.TOKEN_NIL);
+                    }
+                }
+                break;
+            }
+            case 's': {
+                if (this.current - this.start > 1){
+                    const innerCharacter = this.source.charAt(this.start + 1);
+                    switch (innerCharacter){
+                        case 'a': return this.checkKeyword('sai', TokenType.TOKEN_FALSE);
+                        case 'i': return this.checkKeyword('sieu', TokenType.TOKEN_SUPER);
+                    }
+                }
+                break;
+            }
+            case 't': return this.checkKeyword('tra', TokenType.TOKEN_RETURN);
+            case 'v': {
+                if (this.current - this.start > 1){
+                    const innerCharacter = this.source.charAt(this.start + 1);
+                    switch (innerCharacter){
+                        case 'a': return this.checkKeyword('va', TokenType.TOKEN_AND);
+                        case 'i': return this.checkKeyword('viet', TokenType.TOKEN_PRINT);
+                    }
+                }
+                break;
+            }
+        }
+        return TokenType.TOKEN_IDENTIFIER;
+    }
+
     identifierType(){
         const currentCharacter = this.source.charAt(this.start);
         switch(currentCharacter){
@@ -252,7 +315,8 @@ export default class Scanner {
             this.advance();//keep going until the identifier ends
         }
         const payload = this.source.substring(this.start, this.current);
-        return this.makeToken(this.identifierType(), payload);
+        // return this.makeToken(this.identifierType(), payload);
+        return this.makeToken(this.vietIdentifierType(), payload);
     };
 
 

@@ -11,10 +11,10 @@ const classExamples = `
 const classPropertiesExample = `
 class Pair {}
 var pair = Pair();
-pair.first = 1 ;
-pair.second = 2 ;
+pair.first = -10 ;
+pair.second = true ;
 print pair.first;
-print pair.second ; // 3. 
+print !pair.second ; // 3. 
 
 `;
 
@@ -48,7 +48,7 @@ class Person {
 var jane = Person();
 jane.name = "Jane" ;
 var method = jane.sayName ;
-
+print "testing between";
 method (); // ? 
 
 
@@ -84,12 +84,12 @@ class CoffeeMaker {
         this.coffee = coffee ;
     }
     brew () {
-        print "Enjoy your cup of " + this . coffee ;
+        print "Enjoy your cup of " + this.coffee ;
         // No reusing the grounds! this . coffee = nil ;
     }
 }
 var maker = CoffeeMaker ( "coffee and chicory" );
-maker . brew ();
+maker.brew();
 
 
 `;
@@ -162,7 +162,7 @@ const vm = new VM();
 
 // vm.interpret(classExamples);
 // vm.interpret(classPropertiesExample);
-// vm.interpret(classMethodEx);
+// vm.interpret(classMethodEx); //prints nothing
 // vm.interpret(classMethodEx2);
 // vm.interpret(classThisEx);
 // vm.interpret(classThisEx2);
@@ -170,18 +170,8 @@ const vm = new VM();
 // vm.interpret(classThisEx4);
 // vm.interpret(classInitEx);
 // vm.interpret(classNotMethod);
-
-vm.interpret(classInheritance);
-// vm.interpret(classInheritance2);
-
-
-
-
-
-
-
-
-
+// vm.interpret(classInheritance);
+vm.interpret(classInheritance2);
 
 
 print('Everything is awesome.');

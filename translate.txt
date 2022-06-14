@@ -1,0 +1,18 @@
+
+and = va
+class = lop
+else = khac
+false = sai
+for = cho
+fun = ham
+if = neu
+nil = nil
+or = hoac
+print = viet
+return =  tra
+super = sieu
+this = nay
+true = dung
+var = bien
+while = trong_khi
+
