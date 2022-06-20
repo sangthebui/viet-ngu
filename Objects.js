@@ -7,10 +7,6 @@ export const markObject = (obj) => {
 }
 
 export const ValueType = Object.freeze({
-    PRIMITIVE: Symbol('PRIMITIVE'),
-    BOOLEAN: Symbol('BOOLEAN'), //memory collected
-    NIL: Symbol('NIL'),
-    NUMBER: Symbol('NUMBER'),
     STRING: Symbol('STRING'),
     BLOCK: Symbol('BLOCK'),
     CLOSURE: Symbol('CLOSURE'),
@@ -81,6 +77,13 @@ export const newFrame = (closure, ip, stackSlot) => {
     return frame;
 }
 
+export const newNativeFunction = (closure) => {
+    return {
+        type: ValueType.NATIVE_FUNCTION,
+        closure,
+    }
+}
+
 export class ObjectLox {
     constructor(value, type, isMarked=false) {
         this.value = value;
@@ -92,10 +95,6 @@ export class ObjectLox {
 
     static isValue(value){
         switch(value.type){
-            case ValueType.PRIMITIVE:
-            case ValueType.BOOLEAN:
-            case ValueType.NIL:
-            case ValueType.NUMBER:
             case ValueType.STRING:
             case ValueType.BLOCK:
             case ValueType.CLOSURE:
@@ -119,12 +118,12 @@ export class ObjectLox {
         return typeof value === 'string' && type === ValueType.STRING;
     }
 
-    static isNumber({value, type}){
-        return Number.isFinite(value) && type === ValueType.NUMBER;
+    static isNumber(value){
+        return Number.isFinite(value);
     }
 
-    static isBoolean({value, type}){
-        return typeof value === 'boolean' && type === ValueType.BOOLEAN;
+    static isBoolean(value){
+        return typeof value === 'boolean';
     }
 
     static isNil({value, type}){

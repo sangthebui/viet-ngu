@@ -482,13 +482,10 @@ export default class Compiler {
     number(){
         //payload is always a string
         const num = parseInt(this.parser.previous.payload);
-        //TODO GC new Value
-        // this.emitConstant(new Value(num, ValueType.NUMBER));
-        this.emitConstant(new ObjectLox(num, ValueType.NUMBER));
+        this.emitConstant(num);
     }
     string(){
         //TODO GC new Value
-        // this.emitConstant( new ObjectLox(this.parser.previous.payload, ValueType.STRING));
         this.emitConstant( new ObjectLox(this.parser.previous.payload, ValueType.STRING));
     }
     unary(){

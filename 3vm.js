@@ -16,14 +16,14 @@ export const InterpretResult  = Object.freeze({
 
 const FRAMES_MAX = 256;
 
-//TODO remove ObjectLox for primitive values
-
 const printValue = (value) => {
+    //handle nil
+    if (value === null){
+        print("nil");
+        return;
+    }
     switch(value.type){
-        case ValueType.NIL:
-            print("nil");
-            break;
-        case ValueType.PRIMITIVE:
+        case ValueType.STRING:
             print(value.value);
             break;
         case ValueType.CLOSURE:
@@ -43,7 +43,8 @@ const printValue = (value) => {
             print("<fn method>");
             break;
         default:
-            print(value.value);
+            //for raw number, true, false
+            print(value);
             break;
 
     }
@@ -103,21 +104,27 @@ export default class VM {
     isFalsey(value){
         const isNil = ObjectLox.isNil(value) ;
         const isBool = ObjectLox.isBoolean(value);
-        const isFalse =  isNil  || (isBool && !value.value);
+        const isFalse =  isNil  || (isBool && !value);
 
       return isFalse;
     }
 
     valuesEqual(aValue, bValue){
-        if (aValue.type !== bValue.type) return false;
-        switch(aValue.type){
-            case ValueType.NIL: return true;
-            case ValueType.BOOLEAN:
-            case ValueType.NUMBER:
-            case ValueType.STRING:
-                return aValue.value === bValue.value;
-            default:
-                return false;
+        //handles number and boolean separately because they are raw values
+        if (ObjectLox.isNumber(aValue) && ObjectLox.isNumber(bValue)){
+            return aValue === bValue;
+        } else if (ObjectLox.isBoolean(aValue) && ObjectLox.isBoolean(bValue)){
+            return aValue === bValue;
+        } else if (aValue === null && bValue === null) {
+            return true;
+        } else {
+            if (aValue.type !== bValue.type) return false;
+            switch(aValue.type){
+                case ValueType.STRING:
+                    return aValue.value === bValue.value;
+                default:
+                    return false;
+            }
         }
     }
 
@@ -217,12 +224,6 @@ export default class VM {
             return false;
         }
 
-        // if (closure.type === ValueType.CLOSURE ||
-        //     closure.type === ValueType.METHOD ||
-        //     closure.type === ValueType.INITIALIZER){
-        //     closure.ip = 0; //reset the frame IP when it gets call multiple times.
-        // }
-
         //convert the call frames stack to a push and pop action
         let stackSlot = this.stack.length - 1 - argCount;
         let frame = newFrame(closure, 0, stackSlot);
@@ -311,21 +312,15 @@ export default class VM {
                     break;
                 }
                 case OpCode.OP_NIL: {
-                    //TODO GC Value
-                    // this.push(new Value(null, ValueType.NIL));
-                    this.push(new ObjectLox(null, ValueType.NIL));
+                    this.push(null);
                     break;
                 }
                 case OpCode.OP_TRUE: {
-                    //TODO GC Value
-                    // this.push(new Value(true, ValueType.BOOLEAN));
-                    this.push(new ObjectLox(true, ValueType.BOOLEAN));
+                    this.push(true);
                     break;
                 }
                 case OpCode.OP_FALSE: {
-                    //TODO GC Value
-                    // this.push(new Value(false, ValueType.BOOLEAN));
-                    this.push(new ObjectLox(false, ValueType.BOOLEAN));
+                    this.push(false);
                     break;
                 }
                 case OpCode.OP_POP: this.pop(); break;
@@ -432,8 +427,7 @@ export default class VM {
                     const b = this.pop();
                     const a = this.pop();
                     //TODO GC Value
-                    // const c = new Value(this.valuesEqual(a, b), ValueType.BOOLEAN);
-                    const c = new ObjectLox(this.valuesEqual(a, b), ValueType.BOOLEAN);
+                    const c = this.valuesEqual(a, b);
                     this.push(c);
                     break;
                 }
@@ -451,8 +445,8 @@ export default class VM {
                         ObjectLox.isNumber(this.peek(1))){
                         const a = this.pop();
                         const b = this.pop();
-                        //TODO GC Value
-                        this.push(new ObjectLox(b.value > a.value, ValueType.BOOLEAN));                    } else {
+                        this.push(b > a);
+                    } else {
                         // this.push(new Value(b.value > a.value, ValueType.NUMBER));                    } else {
                         this.runtimeError("Operands must be numbers.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
@@ -464,10 +458,7 @@ export default class VM {
                         ObjectLox.isNumber(this.peek(1))){
                         const a = this.pop();
                         const b = this.pop();
-                        //TODO GC Value
-                        // this.push(new Value(b.value < a.value, ValueType.NUMBER));
-                        const bool = b.value < a.value;
-                        this.push(new ObjectLox(bool, ValueType.BOOLEAN));
+                        this.push(b < a);
 
                     } else {
                         this.runtimeError("Operands must be numbers.");
@@ -485,9 +476,9 @@ export default class VM {
                         this.push(new ObjectLox(b.value + a.value, ValueType.STRING));
                     } else if (ObjectLox.isNumber(this.peek(0)) &&
                         ObjectLox.isNumber(this.peek(1))){
-                        //TODO GC Value
-                        // this.push(new Value(this.pop().value + this.pop().value, ValueType.NUMBER));
-                        this.push(new ObjectLox(this.pop().value + this.pop().value, ValueType.NUMBER));
+                        const a = this.pop();
+                        const b = this.pop();
+                        this.push(b + a);
                     } else {
                         this.runtimeError("Operands must be two numbers or two strings.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
@@ -499,9 +490,8 @@ export default class VM {
                         ObjectLox.isNumber(this.peek(1))){
                         const a = this.pop();
                         const b = this.pop();
-                        //TODO GC Value
-                        // this.push(new Value(b.value - a.value, ValueType.NUMBER));                    } else {
-                        this.push(new ObjectLox(b.value - a.value, ValueType.NUMBER));                    } else {
+                        this.push(b - a);
+                    } else {
                         this.runtimeError("Operands must be numbers.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
                     }
@@ -510,9 +500,9 @@ export default class VM {
                 case OpCode.OP_MULTIPLY: {
                     if (ObjectLox.isNumber(this.peek(0)) &&
                         ObjectLox.isNumber(this.peek(1))){
-                        //TODO GC Value
-                        // this.push(new Value(this.pop().value * this.pop().value, ValueType.NUMBER));
-                        this.push(new ObjectLox(this.pop().value * this.pop().value, ValueType.NUMBER));
+                        const a = this.pop();
+                        const b = this.pop();
+                        this.push(a * b);
                     } else {
                         this.runtimeError("Operands must be numbers.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
@@ -524,9 +514,7 @@ export default class VM {
                         ObjectLox.isNumber(this.peek(1))){
                         const a = this.pop();
                         const b = this.pop();
-                        //TODO GC Value
-                        // this.push(new Value(b.value / a.value, ValueType.NUMBER));
-                        this.push(new ObjectLox(b.value / a.value, ValueType.NUMBER));
+                        this.push(b / a);
                     } else {
                         this.runtimeError("Operands must be numbers.");
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
@@ -535,9 +523,7 @@ export default class VM {
                 }
                 case OpCode.OP_NOT: {
                     let temp = this.pop();
-                    //TODO GC Value
-                    // this.push(new Value(this.isFalsey(temp), ValueType.BOOLEAN));
-                    this.push(new ObjectLox(this.isFalsey(temp), ValueType.BOOLEAN));
+                    this.push(this.isFalsey(temp));
                     break;
                 }
                 case OpCode.OP_NEGATE: {
@@ -547,9 +533,7 @@ export default class VM {
                         return InterpretResult.INTERPRET_RUNTIME_ERROR;
                     }
                     value = this.pop();
-                    //TODO GC Value
-                    // this.push(new Value(-value.value, ValueType.NUMBER));
-                    this.push(new ObjectLox(-value.value, ValueType.NUMBER));
+                    this.push(-value);
                     break;
                 }
                 case OpCode.OP_PRINT: {
