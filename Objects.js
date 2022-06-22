@@ -72,7 +72,6 @@ export const newFrame = (closure, ip, stackSlot) => {
         closure: closure,
         ip: ip,
         stackSlot: stackSlot,
-        frameUpvalues: {}
     }
     return frame;
 }
