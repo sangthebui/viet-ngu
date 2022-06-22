@@ -1,88 +1,17 @@
-
-import Scanner, { TokenType } from "./1scanner.js";
+import TokenType from "./Compile/TokenType.js";
 
 import { ObjectLox, ValueType } from "./Objects.js";
-
-let print = console.log;
-
-export const CompileType = Object.freeze({
-    BLOCK: Symbol('BLOCK'),
-    CLOSURE: Symbol('CLOSURE'),
-    METHOD: Symbol('METHOD'),
-    FOR_STATEMENT: Symbol('FOR_STATEMENT'),
-    WHILE_STATEMENT: Symbol('WHILE_STATEMENT'),
-});
-
-export const OpCode = Object.freeze({
-    OP_CONSTANT: Symbol('OP_CONSTANT'),
-    OP_NIL: Symbol('OP_NIL'),
-    OP_TRUE: Symbol('OP_TRUE'),
-    OP_FALSE: Symbol( 'OP_FALSE'),
-    OP_POP: Symbol( 'OP_POP'),
-    OP_GET_LOCAL: Symbol( 'OP_GET_LOCAL'),
-    OP_SET_LOCAL: Symbol( 'OP_SET_LOCAL'),
-    OP_DEFINE_GLOBAL: Symbol('OP_DEFINE_GLOBAL'),
-    OP_SET_GLOBAL: Symbol('OP_SET_GLOBAL'),
-    OP_GET_GLOBAL: Symbol('OP_GET_GLOBAL'),
-    OP_GET_UPVALUE: Symbol( 'OP_GET_UPVALUE'),
-    OP_SET_UPVALUE: Symbol( 'OP_SET_UPVALUE'),
-    OP_GET_PROPERTY: Symbol('OP_GET_PROPERTY'),
-    OP_SET_PROPERTY: Symbol( 'OP_SET_PROPERTY'),
-    OP_EQUAL: Symbol( 'OP_EQUAL'),
-    OP_GET_SUPER: Symbol( 'OP_GET_SUPER'),
-    OP_GREATER: Symbol( 'OP_GREATER'),
-    OP_LESS: Symbol( 'OP_LESS'),
-    OP_ADD: Symbol( 'OP_ADD'),
-    OP_SUBTRACT: Symbol( 'OP_SUBTRACT'),
-    OP_MULTIPLY: Symbol( 'OP_MULTIPLY'),
-    OP_DIVIDE: Symbol( 'OP_DIVIDE'),
-    OP_NOT: Symbol( 'OP_NOT'),
-    OP_NEGATE: Symbol( 'OP_NEGATE'),
-    OP_PRINT: Symbol( 'OP_PRINT'),
-    OP_JUMP: Symbol( 'OP_JUMP'),
-    OP_JUMP_IF_FALSE: Symbol('OP_JUMP_IF_FALSE'),
-    OP_LOOP: Symbol( 'OP_LOOP'),
-    OP_CALL: Symbol( 'OP_CALL'),
-    OP_INVOKE: Symbol('OP_INVOKE'),
-    OP_SUPER_INVOKE: Symbol( 'OP_SUPER_INVOKE'),
-    OP_CLOSURE: Symbol( 'OP_CLOSURE'),
-    OP_CLOSE_UPVALUE: Symbol('OP_CLOSE_UPVALUE'),
-    OP_RETURN: Symbol( 'OP_RETURN'),
-    OP_CLASS: Symbol( 'OP_CLASS'),
-    OP_INHERIT: Symbol( 'OP_INHERIT'),
-    OP_METHOD: Symbol( 'OP_METHOD'),
-
-    //add-on
-    OP_EMPTY: Symbol('OP_EMPTY'),
-});
-
-export const Precedence = Object.freeze({
-    PREC_NONE:  0, //literals and nulls
-    PREC_ASSIGNMENT: 1,  // =
-    PREC_OR: 2,          // or
-    PREC_AND: 3,         // and
-    PREC_EQUALITY: 4,    // == !=
-    PREC_COMPARISON:  5,  // < > <= >=
-    PREC_TERM: 6,        // + -
-    PREC_FACTOR: 7,      // * /
-    PREC_UNARY:  8,       // ! -
-    PREC_CALL: 9,        // . ()
-    PREC_PRIMARY: 10,
-});
+import OpCode from "./Compile/OpCode.js";
+import Precedence from "./Compile/Precedence.js";
+import CompileType from "./Compile/CompileType.js";
+import print from './print.js';
+import Parser from "./Compile/Parser.js";
 
 const UINT8_COUNT  = 255;
 
 export default class Compiler {
     //the current parser
-    parser = {
-        current: null,
-        previous: null,
-        hadError: false,
-        panicMode: false,
-    };
-    // the scanner that is doing the parsing
-    scanner = null;
-    allTokens = [];
+    parser = null;
     //TODO GC => object
     current = {
         arity: 0,
@@ -150,38 +79,16 @@ export default class Compiler {
         [ TokenType.TOKEN_WHILE ]         : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
         [ TokenType.TOKEN_ERROR ]         : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
         [ TokenType.TOKEN_EOF ]           : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
+        [ TokenType.TOKEN_CASE ]          : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
+        [ TokenType.TOKEN_COLON ]          : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
     };
     constructor(source){
-        this.scanner = new Scanner(source);
+        this.parser = new Parser(source);
     }
 
 
-    //region error handling and parsing stuff
-    // chunk manipulation and emitting bytecode
-    errorAt(token, message){
-        if (this.parser.panicMode) return;
-
-        this.parser.panicMode = true;
-        let outputError = `[line ${token.line}] Error`;
-
-        if (token.type === TokenType.TOKEN_EOF){
-            outputError += " at end";
-        } else if (token.type === TokenType.TOKEN_ERROR){
-            //Do nothing
-        } else {
-            outputError += ` at '${token.payload}' `;
-        }
-
-        outputError += `: ${message}`;
-        print(outputError);
-        this.parser.hadError = true;
-    }
-    errorAtCurrent(message){
-        this.errorAt(this.parser.current, message);
-    };
-    error(message){
-        this.errorAt(this.parser.previous, message);
-    }
+    //region  chunk manipulation and emitting bytecode
+    //TODO need to convert
     synchronize(){
         if (this.parser.previous.type === TokenType.TOKEN_SEMICOLON) return;
         switch (this.parser.current.type) {
@@ -199,45 +106,19 @@ export default class Compiler {
                 ; // Do nothing.
         }
 
-        this.advance();
+        this.parser.advance();
     }
-    advance(){
-        this.parser.previous = this.parser.current;
-
-        for (;;) {
-            this.parser.current = this.scanner.scanToken();
-            this.allTokens.push(this.parser.current);
-            if (this.parser.current.type !== TokenType.TOKEN_ERROR) break;
-
-            this.errorAtCurrent(this.parser.current.payload);
-        }
-    };
-    consume(type, message){
-        if (this.parser.current.type === type) {
-            this.advance();
-            return;
-        }
-        this.errorAtCurrent(message);
-    };
-    check(type){
-        return this.parser.current.type === type;
-    };
-    match(type) {
-        if (!this.check(type)) return false;
-        this.advance();
-        return true;
-    };
     addConstant(value){
         let count = this.current.constants.push(value);
         if (count > UINT8_COUNT){
-            this.error("Too many constants in one chunk.");
+            this.parser.error("Too many constants in one chunk.");
         }
         const index = count - 1;
         return index;
     }
     addLocal(name){
         if (this.current.localCount === UINT8_COUNT){
-            this.error("Too many local variables in function.");
+            this.parser.error("Too many local variables in function.");
         }
         //TODO GC => locals
         this.current.locals[this.current.localCount++] = {
@@ -280,7 +161,7 @@ export default class Compiler {
         const oneJump = 1;
         const offset = this.current.code.length - loopStart + oneJump;
         if (offset > UINT8_COUNT){
-            this.error('Loop body too large.');
+            this.parser.error('Loop body too large.');
         }
 
         this.emitByte(offset);
@@ -295,7 +176,7 @@ export default class Compiler {
         const jump = this.current.code.length - oneJump;
 
         if (jump > UINT8_COUNT) {
-            this.error("Too much code to jump over.");
+            this.parser.error("Too much code to jump over.");
         }
 
         return jump;
@@ -306,18 +187,17 @@ export default class Compiler {
         const jump = this.current.code.length - offset - oneJump;
 
         if (jump > UINT8_COUNT){
-            this.error('Too much code to jump over.');
+            this.parser.error('Too much code to jump over.');
         }
         this.current.code[offset] = jump;
     }
     parsePrecedence(precedence){
-        //consume the first token
-        this.advance();
+        this.parser.advance();
 
         //always a prefixRule
         const prefixRule = this.rules[this.parser.previous.type].prefix;
         if (prefixRule === null){
-            this.error('Expect expression.');
+            this.parser.error('Expect expression.');
             return;
         }
         //only consume the equal if the expression is lower than the assignment
@@ -326,14 +206,14 @@ export default class Compiler {
 
         //parse anything that has less precedence than the current operator
         while(precedence <= this.rules[this.parser.current.type].precedence){
-            this.advance();
+            this.parser.advance();
 
             const infixRule = this.rules[this.parser.previous.type].infix;
             infixRule(canAssign);
         }
 
-        if (canAssign && this.match(TokenType.TOKEN_EQUAL)){
-            this.error('Invalid assignment target.');
+        if (canAssign && this.parser.match(TokenType.TOKEN_EQUAL)){
+            this.parser.error('Invalid assignment target.');
         }
     }
     //endregion
@@ -345,7 +225,7 @@ export default class Compiler {
             let local = compiler.locals[i];
             if (local.name === identifierName) {
                 if (local.depth === -1){
-                    this.error("Can't read local variable in its own initializer.");
+                    this.parser.error("Can't read local variable in its own initializer.");
                 }
                 return i;
             }
@@ -364,7 +244,7 @@ export default class Compiler {
         }
 
         if (upvalueCount === UINT8_COUNT){
-            this.error('Too many closure variables in function.');
+            this.parser.error('Too many closure variables in function.');
             return 0;
         }
         //TODO GC => compiler upvalues
@@ -407,7 +287,7 @@ export default class Compiler {
             setOp = OpCode.OP_SET_GLOBAL;
         }
 
-        if (canAssign && this.match(TokenType.TOKEN_EQUAL)){
+        if (canAssign && this.parser.match(TokenType.TOKEN_EQUAL)){
             this.expression();
             this.emitBytes(setOp, arg);
         } else {
@@ -423,7 +303,7 @@ export default class Compiler {
     varDeclaration(){
         //Declaring a variable only adds it to the local scope.
         const errorMessage = 'Expect variable name.';
-        this.consume(TokenType.TOKEN_IDENTIFIER, errorMessage);
+        this.parser.consume(TokenType.TOKEN_IDENTIFIER, errorMessage);
         const identifierName = this.parser.previous.payload;
         let identifierConstantIndex = this.identifierConstant(identifierName);
 
@@ -439,7 +319,7 @@ export default class Compiler {
                 }
 
                 if (local.name === identifierName){
-                    this.error("Already a variable with this name in this scope.");
+                    this.parser.error("Already a variable with this name in this scope.");
                 }
             }
 
@@ -448,7 +328,7 @@ export default class Compiler {
 
             //compile the initializer, either there is an expression or there is none
             //and we set it to NIL
-            if(this.match(TokenType.TOKEN_EQUAL)){
+            if(this.parser.match(TokenType.TOKEN_EQUAL)){
                 //this will put a value on the stack, then at the end,
                 // an OpCode will determine where that variable will live.
                 this.expression();
@@ -463,7 +343,7 @@ export default class Compiler {
         } else {
             //compile the initializer, either there is an expression or there is none
             //and we set it to NIL
-            if(this.match(TokenType.TOKEN_EQUAL)){
+            if(this.parser.match(TokenType.TOKEN_EQUAL)){
                 //this will put a value on the stack, then at the end,
                 // an OpCode will determine where that variable will live.
                 this.expression();
@@ -476,7 +356,7 @@ export default class Compiler {
 
         }
 
-        this.consume(TokenType.TOKEN_SEMICOLON, 'Expect ";" after variable declaration.');
+        this.parser.consume(TokenType.TOKEN_SEMICOLON, 'Expect ";" after variable declaration.');
     }
 
     number(){
@@ -554,17 +434,17 @@ export default class Compiler {
     }
     grouping(){
         this.expression();
-        this.consume(TokenType.TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
+        this.parser.consume(TokenType.TOKEN_RIGHT_PAREN, "Expect ')' after expression.");
     }
     dot(canAssign){
-        this.consume(TokenType.TOKEN_IDENTIFIER, 'Expect property name after ".".');
+        this.parser.consume(TokenType.TOKEN_IDENTIFIER, 'Expect property name after ".".');
         const identifierName = this.parser.previous.payload;
         let identifierConstantIndex = this.identifierConstant(identifierName);
 
-        if (canAssign && this.match(TokenType.TOKEN_EQUAL)){
+        if (canAssign && this.parser.match(TokenType.TOKEN_EQUAL)){
             this.expression();
             this.emitBytes(OpCode.OP_SET_PROPERTY, identifierConstantIndex);
-        } else if (this.match(TokenType.TOKEN_LEFT_PAREN)){
+        } else if (this.parser.match(TokenType.TOKEN_LEFT_PAREN)){
             //combine OP_GET_PROPERTY and OP_CALL
             let argCount = this.argumentList();
             //3 bytes
@@ -577,26 +457,26 @@ export default class Compiler {
     }
     this_(){
         if (this.currentClass === null){
-            this.error("can't use 'this' outside of a class.");
+            this.parser.error("can't use 'this' outside of a class.");
             return;
         }
         this.identifier(false);
     }
     super_(){
         if (this.currentClass === null){
-            this.error("can't user 'super' outside of a class.");
+            this.parser.error("can't user 'super' outside of a class.");
         } else if (!this.currentClass.hasSuperClass){
-            this.error("Can't use 'super' in a class with no superclass.");
+            this.parser.error("Can't use 'super' in a class with no superclass.");
         }
-        this.consume(TokenType.TOKEN_DOT , "Expect '.' after 'super'." );
-        this.consume(TokenType.TOKEN_IDENTIFIER , "Expect superclass method name." );
+        this.parser.consume(TokenType.TOKEN_DOT , "Expect '.' after 'super'." );
+        this.parser.consume(TokenType.TOKEN_IDENTIFIER , "Expect superclass method name." );
         let identifierName = this.parser.previous.payload;
         let identifierConstantIndex = this.identifierConstant(identifierName);
 
 
         this.namedVariable("this", false);
 
-        if (this.match(TokenType.TOKEN_LEFT_PAREN)) {
+        if (this.parser.match(TokenType.TOKEN_LEFT_PAREN)) {
             let argCount = this.argumentList();
             this.namedVariable("super", false);
             this.emitBytes(OpCode.OP_SUPER_INVOKE, identifierConstantIndex);
@@ -609,16 +489,16 @@ export default class Compiler {
 
     argumentList(){
         let argCount = 0;
-        if (!this.check(TokenType.TOKEN_RIGHT_PAREN)){
+        if (!this.parser.check(TokenType.TOKEN_RIGHT_PAREN)){
             do {
                 this.expression();
                 if (argCount === 255){
-                    this.error("Can't have more than 255 arguments.");
+                    this.parser.error("Can't have more than 255 arguments.");
                 }
                 argCount++;
-            } while (this.match(TokenType.TOKEN_COMMA));
+            } while (this.parser.match(TokenType.TOKEN_COMMA));
         }
-        this.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after arguments.');
+        this.parser.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after arguments.');
         return argCount;
     }
 
@@ -629,13 +509,13 @@ export default class Compiler {
     }
 
     funParameters(){
-        if (!this.check(TokenType.TOKEN_RIGHT_PAREN)) {
+        if (!this.parser.check(TokenType.TOKEN_RIGHT_PAREN)) {
             do {
                 this.current.arity++;
                 if (this.current.arity > 255) {
-                    this.errorAtCurrent("Can't have more than 255 parameters.");
+                    this.parser.errorAtCurrent("Can't have more than 255 parameters.");
                 }
-                this.consume(TokenType.TOKEN_IDENTIFIER, "Expect parameter name.");
+                this.parser.consume(TokenType.TOKEN_IDENTIFIER, "Expect parameter name.");
                 // const parameterName = this.parser.previous.payload;
                 let identifierName = this.parser.previous.payload;
                 let identifierConstantIndex = this.identifierConstant(identifierName);
@@ -650,7 +530,7 @@ export default class Compiler {
                         }
 
                         if (local.name === identifierName){
-                            this.error("Already a variable with this name in this scope.");
+                            this.parser.error("Already a variable with this name in this scope.");
                         }
                     }
 
@@ -665,14 +545,14 @@ export default class Compiler {
                     this.emitBytes(OpCode.OP_DEFINE_GLOBAL, identifierConstantIndex);
                 }
 
-            } while (this.match(TokenType.TOKEN_COMMA));
+            } while (this.parser.match(TokenType.TOKEN_COMMA));
             //reverse the order the parameters are stored because of the order arguments are stored in the stack as last items are at the top
         }
     }
 
     funDeclaration(){
         //consume the identifier
-        this.consume(TokenType.TOKEN_IDENTIFIER, 'Expect function name.');
+        this.parser.consume(TokenType.TOKEN_IDENTIFIER, 'Expect function name.');
         const identifierName = this.parser.previous.payload;
         let identifierConstantIndex = this.identifierConstant(identifierName);
         //check if the name has been created
@@ -688,7 +568,7 @@ export default class Compiler {
                 }
 
                 if (local.name === identifierName){
-                    this.error("Already a variable with this name in this scope.");
+                    this.parser.error("Already a variable with this name in this scope.");
                 }
             }
             //define the variable without existences
@@ -730,11 +610,11 @@ export default class Compiler {
 
         //change the current with a new Compiler block
 
-        this.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after function name.');
+        this.parser.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after function name.');
         //handles parameters, add each parameter to the locals object
         this.funParameters();
-        this.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after parameters.');
-        this.consume(TokenType.TOKEN_LEFT_BRACE, 'Expect "{" before function body.');
+        this.parser.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after parameters.');
+        this.parser.consume(TokenType.TOKEN_LEFT_BRACE, 'Expect "{" before function body.');
         this.block();
 
         //set back the last scope
@@ -756,7 +636,7 @@ export default class Compiler {
     };
 
     method(){
-        this.consume(TokenType.TOKEN_IDENTIFIER, 'Expect method name.');
+        this.parser.consume(TokenType.TOKEN_IDENTIFIER, 'Expect method name.');
         const identifierName = this.parser.previous.payload;
         const identifierConstantIndex = this.identifierConstant(identifierName);
 
@@ -799,11 +679,11 @@ export default class Compiler {
         this.beginScope();
         //change the current with a new Compiler block
 
-        this.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after function name.');
+        this.parser.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after function name.');
         //handles parameters, add each parameter to the locals object
         this.funParameters();
-        this.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after parameters.');
-        this.consume(TokenType.TOKEN_LEFT_BRACE, 'Expect "{" before function body.');
+        this.parser.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after parameters.');
+        this.parser.consume(TokenType.TOKEN_LEFT_BRACE, 'Expect "{" before function body.');
         this.block();
 
         //set back the last scope
@@ -823,7 +703,7 @@ export default class Compiler {
     }
 
     classDeclaration(){
-        this.consume (TokenType.TOKEN_IDENTIFIER , "Expect class name." );
+        this.parser.consume (TokenType.TOKEN_IDENTIFIER , "Expect class name." );
         const classIdentifier = this.parser.previous.payload;
         let classConstantIndex = this.identifierConstant(classIdentifier);
 
@@ -848,7 +728,7 @@ export default class Compiler {
                 }
 
                 if (local.name === classIdentifier) {
-                    this.error("Already a variable with this name in this scope.");
+                    this.parser.error("Already a variable with this name in this scope.");
                 }
             }
 
@@ -873,15 +753,15 @@ export default class Compiler {
         this.currentClass = compilerClass;
 
         //check for inheritance
-        if (this.match(TokenType.TOKEN_LESS)){
-            this.consume(TokenType.TOKEN_IDENTIFIER, 'Expect superclass name.');
+        if (this.parser.match(TokenType.TOKEN_LESS)){
+            this.parser.consume(TokenType.TOKEN_IDENTIFIER, 'Expect superclass name.');
             const superClassIdentifier = this.parser.previous.payload;
             //namedVariable check where the identifier is
             this.identifier(false);
 
             //check that the class and superclass are different
             if (classIdentifier === superClassIdentifier){
-                this.error("A class can't inherit from itself.");
+                this.parser.error("A class can't inherit from itself.");
             }
 
             this.beginScope();
@@ -898,13 +778,13 @@ export default class Compiler {
 
         this.namedVariable(classIdentifier, false);
 
-        this.consume ( TokenType.TOKEN_LEFT_BRACE , "Expect '{' before class body." );
+        this.parser.consume ( TokenType.TOKEN_LEFT_BRACE , "Expect '{' before class body." );
 
-        while(!this.check(TokenType.TOKEN_RIGHT_BRACE) && !this.check(TokenType.TOKEN_EOF)){
+        while(!this.parser.check(TokenType.TOKEN_RIGHT_BRACE) && !this.parser.check(TokenType.TOKEN_EOF)){
             this.method();
         }
 
-        this.consume ( TokenType.TOKEN_RIGHT_BRACE , "Expect '}' after class body." );
+        this.parser.consume ( TokenType.TOKEN_RIGHT_BRACE , "Expect '}' after class body." );
 
         this.emitByte(OpCode.OP_POP);
 
@@ -921,19 +801,25 @@ export default class Compiler {
 
     printStatement(){
         this.expression();
-        this.consume(TokenType.TOKEN_SEMICOLON, 'Expect ";" after value.');
+        this.parser.consume(TokenType.TOKEN_SEMICOLON, 'Expect ";" after value.');
         this.emitByte(OpCode.OP_PRINT);
     }
+
+    breakStatement(){
+        this.parser.consume(TokenType.TOKEN_SEMICOLON, 'Expect ";" after break.');
+
+    }
+
     forStatement(){
         //Note, no braces within the for statement
         this.beginScope();
 
-        this.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after "for".');
+        this.parser.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after "for".');
 
         //for initializer
-        if (this.match(TokenType.TOKEN_SEMICOLON)){
+        if (this.parser.match(TokenType.TOKEN_SEMICOLON)){
             //No initializer.
-        } else if (this.match(TokenType.TOKEN_VAR)){
+        } else if (this.parser.match(TokenType.TOKEN_VAR)){
             this.varDeclaration();
         } else {
             this.expressionStatement();
@@ -945,9 +831,9 @@ export default class Compiler {
         let exitJump = -1;
 
         // for exit condition
-        if (!this.match(TokenType.TOKEN_SEMICOLON)){
+        if (!this.parser.match(TokenType.TOKEN_SEMICOLON)){
             this.expression();
-            this.consume(TokenType.TOKEN_SEMICOLON, 'Expect ";" after loop condition.');
+            this.parser.consume(TokenType.TOKEN_SEMICOLON, 'Expect ";" after loop condition.');
 
             // Jump out of the loop if the condition is false.
             exitJump = this.emitJump(OpCode.OP_JUMP_IF_FALSE);
@@ -956,12 +842,12 @@ export default class Compiler {
 
 
         // for increment
-        if (!this.match(TokenType.TOKEN_RIGHT_PAREN)){
+        if (!this.parser.match(TokenType.TOKEN_RIGHT_PAREN)){
             const bodyJump = this.emitJump(OpCode.OP_JUMP);
             const incrementStart = this.current.code.length;
             this.expression();
             this.emitByte(OpCode.OP_POP);
-            this.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after for clauses.');
+            this.parser.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after for clauses.');
 
             this.emitLoop(loopStart);
             loopStart = incrementStart;
@@ -980,9 +866,9 @@ export default class Compiler {
         this.endScope();
     }
     ifStatement(){
-        this.consume(TokenType.TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
+        this.parser.consume(TokenType.TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
         this.expression();
-        this.consume(TokenType.TOKEN_RIGHT_PAREN, "Expect ')' after condition."); // [paren]
+        this.parser.consume(TokenType.TOKEN_RIGHT_PAREN, "Expect ')' after condition."); // [paren]
 
         let thenJump = this.emitJump(OpCode.OP_JUMP_IF_FALSE);
         // pop-then
@@ -1001,26 +887,26 @@ export default class Compiler {
         // pop-end
         // compile-else
 
-        if (this.match(TokenType.TOKEN_ELSE)) this.statement();
+        if (this.parser.match(TokenType.TOKEN_ELSE)) this.statement();
         // compile-else
         //patch-else
         this.patchJump(elseJump);
     }
     returnStatement(){
         if (this.current.name === '<script>'){
-            this.error("Can't return from top-level code.");
+            this.parser.error("Can't return from top-level code.");
         }
 
-        if(this.match(TokenType.TOKEN_SEMICOLON)){
+        if(this.parser.match(TokenType.TOKEN_SEMICOLON)){
             this.emitReturn();
         } else {
 
             if (this.current.type === ValueType.INITIALIZER) {
-                this.error("Can't return a value from an initializer.");
+                this.parser.error("Can't return a value from an initializer.");
             }
 
             this.expression();
-            this.consume(TokenType.TOKEN_SEMICOLON, 'Expect ";" after return value.');
+            this.parser.consume(TokenType.TOKEN_SEMICOLON, 'Expect ";" after return value.');
             this.emitByte(OpCode.OP_RETURN);
         }
     }
@@ -1028,9 +914,9 @@ export default class Compiler {
         //start the while loop
         const loopStart = this.current.code.length;
         //check the condition
-        this.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after "while".');
+        this.parser.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after "while".');
         this.expression();
-        this.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after condition.');
+        this.parser.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after condition.');
 
         const exitJump = this.emitJump(OpCode.OP_JUMP_IF_FALSE);
         this.emitByte(OpCode.OP_POP);
@@ -1043,9 +929,86 @@ export default class Compiler {
         this.patchJump(exitJump);
         this.emitByte(OpCode.OP_POP);
     }
+
+    switchStatement(){
+        const MAX_CASES = 256;
+        this.parser.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after "switch".');
+        this.expression(); //push the switch value on the stack
+        this.parser.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after value.');
+        this.parser.consume(TokenType.TOKEN_LEFT_BRACE, 'Expect "{" before switch cases.');
+
+        let state = 0;  //
+        let caseEnds = [];
+        let caseCount = 0; //the total number of cases
+        let previousCaseSkip = -1;
+
+        //we are still in the switch statement
+        while (!this.parser.match(TokenType.TOKEN_RIGHT_BRACE) && !this.parser.check(TokenType.TOKEN_EOF)) {
+
+            //parse the case or default
+            if (this.parser.match(TokenType.TOKEN_CASE) || this.parser.match(TokenType.TOKEN_DEFAULT)) {
+                let caseType = this.parser.previous.type;
+
+                if (state === 2) {
+                    this.parser.error("Can't have another case or default after the default case");
+                }
+
+                if (state === 1) {
+                    //At the end of the previous case, jump over the others. tidy up last case
+                    caseEnds[caseCount++] = this.emitJump(OpCode.OP_JUMP);
+
+                    //Patch its condition to jump to the next case (this one).
+
+                    this.patchJump(previousCaseSkip);
+                    this.emitByte(OpCode.OP_POP);
+                }
+
+                if (caseType === TokenType.TOKEN_CASE) {
+                    state = 1;
+
+                    //See if the case is equal to the value.
+                    this.emitByte(OpCode.OP_DUP);
+                    this.expression();
+
+                    this.parser.consume(TokenType.TOKEN_COLON, "Expect ':' after case value.");
+
+                    this.emitByte(OpCode.OP_EQUAL);
+                    previousCaseSkip = this.emitJump(OpCode.OP_JUMP_IF_FALSE);
+
+                    // Pop the comparison result TODO?? look at this pop.
+                    this.emitByte(OpCode.OP_POP);
+                } else {
+                    state = 2;
+                    this.parser.consume(TokenType.TOKEN_COLON, "Expect ':' after default.");
+                    previousCaseSkip = -1;
+                }
+            } else {
+                //Otherwise, it's a statement inside the current case or default.
+                if (state === 0) {
+                    this.parser.error("Can't have statements before any case");
+                }
+                this.statement();
+            }
+        }
+
+        // If we ended without a default case, patch its condition jump.
+        if (state === 1){
+            this.patchJump(previousCaseSkip);
+            this.emitByte(OpCode.OP_POP);
+        }
+
+        //Patch all the case jumps to the end.
+        for(let i = 0; i < caseCount; i++){
+            this.patchJump(caseEnds[i]);
+        }
+
+        this.emitByte(OpCode.OP_POP); // pop the switch value
+
+    }
+
     expressionStatement(){
         this.expression();
-        this.consume(TokenType.TOKEN_SEMICOLON, "Expect ';' after expression.");
+        this.parser.consume(TokenType.TOKEN_SEMICOLON, "Expect ';' after expression.");
         this.emitByte(OpCode.OP_POP);
     }
 
@@ -1053,10 +1016,10 @@ export default class Compiler {
         this.current.scopeDepth++;
     }
     block (){
-        while(!this.check(TokenType.TOKEN_RIGHT_BRACE) && !this.check(TokenType.TOKEN_EOF)){
+        while(!this.parser.check(TokenType.TOKEN_RIGHT_BRACE) && !this.parser.check(TokenType.TOKEN_EOF)){
             this.declaration();
         }
-        this.consume(TokenType.TOKEN_RIGHT_BRACE, 'Expect "}" after block.');
+        this.parser.consume(TokenType.TOKEN_RIGHT_BRACE, 'Expect "}" after block.');
     };
     endScope(){
         this.current.scopeDepth--;
@@ -1076,17 +1039,21 @@ export default class Compiler {
     }
 
     statement(){
-        if (this.match(TokenType.TOKEN_PRINT)) {
+        if (this.parser.match(TokenType.TOKEN_PRINT)) {
             this.printStatement();
-        } else if (this.match(TokenType.TOKEN_FOR)){
+        } else if (this.parser.match(TokenType.TOKEN_BREAK)){
+            this.breakStatement();
+        }else if (this.parser.match(TokenType.TOKEN_FOR)){
             this.forStatement();
-        } else if (this.match(TokenType.TOKEN_IF)){
+        } else if (this.parser.match(TokenType.TOKEN_IF)){
             this.ifStatement();
-        } else if (this.match(TokenType.TOKEN_RETURN)){
+        } else if (this.parser.match(TokenType.TOKEN_RETURN)){
             this.returnStatement();
-        } else if (this.match(TokenType.TOKEN_WHILE)){
+        } else if (this.parser.match(TokenType.TOKEN_WHILE)){
             this.whileStatement();
-        } else if (this.match(TokenType.TOKEN_LEFT_BRACE)){
+        } else if (this.parser.match(TokenType.TOKEN_SWITCH)){
+           this.switchStatement();
+        } else if (this.parser.match(TokenType.TOKEN_LEFT_BRACE)){
             //for block statements
             this.beginScope();
             this.block();
@@ -1096,11 +1063,11 @@ export default class Compiler {
         }
     }
     declaration(){
-        if (this.match(TokenType.TOKEN_CLASS)){
+        if (this.parser.match(TokenType.TOKEN_CLASS)){
             this.classDeclaration();
-        } else if (this.match(TokenType.TOKEN_FUN)){
+        } else if (this.parser.match(TokenType.TOKEN_FUN)){
             this.funDeclaration();
-        } else if (this.match(TokenType.TOKEN_VAR)) {
+        } else if (this.parser.match(TokenType.TOKEN_VAR)) {
             this.varDeclaration();
         } else {
             this.statement();
@@ -1123,9 +1090,9 @@ export default class Compiler {
         this.parser.hadError = false;
         this.parser.panicMode = false;
 
-        this.advance();
+        this.parser.advance();
 
-        while (!this.match(TokenType.TOKEN_EOF)){
+        while (!this.parser.match(TokenType.TOKEN_EOF)){
             //each declaration is in charge of advancing the next token.
             this.declaration();
         }

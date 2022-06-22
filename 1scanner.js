@@ -1,44 +1,4 @@
-
-export const TokenType = Object.freeze({
-    TOKEN_ERROR: Symbol("TOKEN_ERROR"),
-    TOKEN_LEFT_PAREN: Symbol('TOKEN_LEFT_PAREN'),
-    TOKEN_RIGHT_PAREN: Symbol('TOKEN_RIGHT_PAREN'),
-    TOKEN_LEFT_BRACE: Symbol('TOKEN_LEFT_BRACE'),
-    TOKEN_RIGHT_BRACE: Symbol('TOKEN_RIGHT_BRACE'),
-    TOKEN_COMMA: Symbol('TOKEN_COMMA'),
-    TOKEN_DOT: Symbol('TOKEN_DOT'),
-    TOKEN_MINUS: Symbol('TOKEN_MINUS'),
-    TOKEN_PLUS: Symbol('TOKEN_PLUS'),
-    TOKEN_SEMICOLON: Symbol('TOKEN_SEMICOLON'),
-    TOKEN_SLASH: Symbol('TOKEN_SLASH'),
-    TOKEN_STAR: Symbol('TOKEN_STAR'),
-    // One or two characer tokens.
-    TOKEN_BANG: Symbol('TOKEN_BANG'),
-    TOKEN_BANG_EQUAL: Symbol( 'TOKEN_BANG_EQUAL'),
-    TOKEN_EQUAL: Symbol('TOKEN_EQUAL'),
-    TOKEN_EQUAL_EQUAL: Symbol('TOKEN_EQUAL_EQUAL'),
-    TOKEN_GREATER: Symbol('TOKEN_GREATER'),
-    TOKEN_GREATER_EQUAL: Symbol('TOKEN_GREATER_EQUAL'),
-    TOKEN_LESS: Symbol( 'TOKEN_LESS'),
-    TOKEN_LESS_EQUAL: Symbol('TOKEN_LESS_EQUAL'),
-    // Literals
-    TOKEN_IDENTIFIER: Symbol( 'TOKEN_IDENTIFIER'),
-    TOKEN_STRING: Symbol('TOKEN_STRING'),
-    TOKEN_NUMBER: Symbol( 'TOKEN_NUMBER'),
-    // Keywords.
-    TOKEN_AND: Symbol('TOKEN_AND'),
-    TOKEN_CLASS: Symbol( 'TOKEN_CLASS'), TOKEN_ELSE: Symbol( 'TOKEN_ELSE'),
-    TOKEN_FALSE: Symbol( 'TOKEN_FALSE'),
-    TOKEN_FOR: Symbol( 'TOKEN_FOR'), TOKEN_FUN: Symbol( 'TOKEN_FUN'),
-    TOKEN_IF: Symbol( 'TOKEN_IF'), TOKEN_NIL: Symbol('TOKEN_NIL'),
-    TOKEN_OR: Symbol('TOKEN_OR'), TOKEN_PRINT : Symbol('TOKEN_PRINT'),
-    TOKEN_RETURN: Symbol( 'TOKEN_RETURN'),
-    TOKEN_SUPER: Symbol( 'TOKEN_SUPER'), TOKEN_THIS: Symbol( 'TOKEN_THIS'),
-    TOKEN_TRUE: Symbol( 'TOKEN_TRUE'), TOKEN_VAR: Symbol( 'TOKEN_VAR'),
-    TOKEN_WHILE: Symbol( 'TOKEN_WHILE'),
-    TOKEN_EOF: Symbol( 'TOKEN_EOF'), TOKEN_EMPTY: Symbol( 'TOKEN_EMPTY'),
-});
-
+import TokenType from "./Compile/TokenType.js";
 
 export default class Scanner {
     source = '';
@@ -148,7 +108,15 @@ export default class Scanner {
         const currentCharacter = this.source.charAt(this.start);
         switch(currentCharacter){
             case 'a': return this.checkKeyword('and', TokenType.TOKEN_AND);
-            case 'c': return this.checkKeyword('class', TokenType.TOKEN_CLASS);
+            case 'b': return this.checkKeyword('break', TokenType.TOKEN_BREAK);
+            case 'c': if (this.current - this.start > 1) {
+                const innerCharacter = this.source.charAt(this.start + 1);
+                switch (innerCharacter) {
+                    case 'a': return this.checkKeyword('case', TokenType.TOKEN_CASE);
+                    case 'l':return this.checkKeyword('class', TokenType.TOKEN_CLASS);
+                }
+            }
+            case 'd': return this.checkKeyword('default', TokenType.TOKEN_DEFAULT);
             case 'e': return this.checkKeyword('else', TokenType.TOKEN_ELSE);
             case 'f': {
                 if (this.current - this.start > 1){
@@ -166,7 +134,15 @@ export default class Scanner {
             case 'o': return this.checkKeyword('or', TokenType.TOKEN_OR);
             case 'p': return this.checkKeyword('print', TokenType.TOKEN_PRINT);
             case 'r': return this.checkKeyword('return', TokenType.TOKEN_RETURN);
-            case 's': return this.checkKeyword('super', TokenType.TOKEN_SUPER);
+            case 's': {
+                if (this.current - this.start > 1) {
+                    const innerCharacter = this.source.charAt(this.start + 1);
+                    switch (innerCharacter) {
+                        case 'u': return this.checkKeyword('super', TokenType.TOKEN_SUPER);
+                        case 'w':  return this.checkKeyword('switch', TokenType.TOKEN_SWITCH);
+                    }
+                }
+            }
             case 't': {
                 if (this.current - this.start > 1){
                     const innerCharacter = this.source.charAt(this.start + 1);
@@ -279,6 +255,7 @@ export default class Scanner {
             case '+': return this.makeToken(TokenType.TOKEN_PLUS, '+');
             case '/': return this.makeToken(TokenType.TOKEN_SLASH, '/');
             case '*': return this.makeToken(TokenType.TOKEN_STAR, '*');
+            case ':': return this.makeToken(TokenType.TOKEN_COLON, ':');
             /* one or two characters together*/
             case '!': return this.makeToken(this.match('=')? TokenType.TOKEN_BANG_EQUAL: TokenType.TOKEN_BANG, '!');
             case '=': return this.makeToken(this.match('=')? TokenType.TOKEN_EQUAL_EQUAL: TokenType.TOKEN_EQUAL, '=');

@@ -1,54 +1,15 @@
-import Compiler, { OpCode } from './2compile.js';
-
+import Compiler from './2compile.js';
+import OpCode from "./Compile/OpCode.js";
+import InterpretResult from "./Virtual_Machine/InterpretResult.js";
 import {
     ObjectLox, ValueType,
     newKlass, newMethod, newInstance,
     newFrame, newClosure
 } from "./Objects.js";
 
-const print = console.log;
-
-export const InterpretResult  = Object.freeze({
-    INTERPRET_OK: Symbol('INTERPRET_OK'),
-    INTERPRET_COMPILE_ERROR: Symbol('INTERPRET_COMPILE_ERROR'),
-    INTERPRET_RUNTIME_ERROR: Symbol('INTERPRET_RUNTIME_ERROR'),
-});
+import print, {printValue} from "./print.js";
 
 const FRAMES_MAX = 256;
-
-const printValue = (value) => {
-    //handle nil
-    if (value === null){
-        print("nil");
-        return;
-    }
-    switch(value.type){
-        case ValueType.STRING:
-            print(value.value);
-            break;
-        case ValueType.CLOSURE:
-            print(value.name);
-            break;
-        case ValueType.CLASS:
-            print(value.name);
-            break;
-        case ValueType.OBJECT:
-            print(`instance of ${value.klass.name}`);
-            break;
-        case ValueType.NATIVE_FUNCTION:
-            print("<native fn>");
-            break;
-        case ValueType.METHOD:
-        case ValueType.BOUND_METHOD:
-            print("<fn method>");
-            break;
-        default:
-            //for raw number, true, false
-            print(value);
-            break;
-
-    }
-};
 
 //Memory management: stacks, globals, frame.closure (same as compiler.closure), frame.closure.frameUpvalues,
 //compiler.closure
@@ -472,7 +433,6 @@ export default class VM {
                         const a = this.pop();
                         const b = this.pop();
                         //TODO GC Value
-                        // this.push(new Value(b.value + a.value), ValueType.STRING);
                         this.push(new ObjectLox(b.value + a.value, ValueType.STRING));
                     } else if (ObjectLox.isNumber(this.peek(0)) &&
                         ObjectLox.isNumber(this.peek(1))){
@@ -555,6 +515,7 @@ export default class VM {
                     }
                     break;
                 }
+                case OpCode.OP_DUP: this.push(this.peek(0)); break;
                 case OpCode.OP_LOOP: {
                     const offset = read_byte();
                     frame.ip -= offset;
