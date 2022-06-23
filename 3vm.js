@@ -331,15 +331,15 @@ export default class VM {
                     const slot = read_byte();
                     const upValue = frame.closure.frameUpvalues[slot];
                     //TODO GC Value
-                    // let value = new Value(0);
-                    let value = new ObjectLox(0);
-                    if (Number.isInteger(upValue.location)){
-                        value = this.stack[upValue.location];
-                    } else if (ObjectLox.isValue(upValue.location)){
-                        value = upValue.location;
-                    }
+                    // Raw number does not need this anymore.
+                    // let value = new ObjectLox(0);
+                    // if (Number.isInteger(upValue.location)){
+                    //     value = this.stack[upValue.location];
+                    // } else if (ObjectLox.isValue(upValue.location)){
+                    //     value = upValue.location;
+                    // }
                     //
-                    this.push(value);
+                    this.push(upValue.location);
 
                     break;
                 }
