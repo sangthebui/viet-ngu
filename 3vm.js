@@ -1,6 +1,8 @@
-import Compiler from './2compile.js';
+import CompilerS from './2compile.js';
 import OpCode from "./Compile/OpCode.js";
 import InterpretResult from "./Virtual_Machine/InterpretResult.js";
+import CallableType from "./Compile/CallableType.js";
+
 import {
     ObjectLox, ValueType,
     newKlass, newMethod, newInstance,
@@ -52,7 +54,7 @@ export default class VM {
 
     defineNative(name, closure){
         this.globals[name] = {
-            type: ValueType.NATIVE_FUNCTION,
+            type: CallableType.NATIVE_FUNCTION,
             closure
         };
     }
@@ -124,6 +126,7 @@ export default class VM {
             //capture the item on the stack
             let localFromStack = this.stack[upvalue.location];
             upvalue.location = localFromStack;
+            upvalue.isCaptured = true;
             this.openUpvalues = upvalue.next;
         }
     }
@@ -131,14 +134,14 @@ export default class VM {
     callValue(callee, argCount){
 
         switch(callee.type){
-            case ValueType.BOUND_METHOD: {
+            case CallableType.BOUND_METHOD: {
                 //binding this to each method
                 let location = this.stack.length - argCount - 1;
                 this.stack[location] = callee.receiver;
 
                 return this.call(callee.method, argCount);
             }
-            case ValueType.CLASS: {
+            case CallableType.CLASS: {
                 const instance =  newInstance(callee);
                 //push onto the stack before all the arguments
                 const position = this.stack.length - 1 - argCount;
@@ -157,11 +160,11 @@ export default class VM {
 
                 return true;
             }
-            case ValueType.CLOSURE: {
+            case CallableType.CLOSURE: {
                 //we are calling function
                 return this.call(callee, argCount);
             }
-            case ValueType.NATIVE_FUNCTION: {
+            case CallableType.NATIVE_FUNCTION: {
                 const result = callee.closure(argCount, this.stack.length - 1 - argCount);
                 this.stack = this.stack.slice(0, argCount + 1); // remove the argCount and the function
                 this.push(result);
@@ -339,8 +342,11 @@ export default class VM {
                     //     value = upValue.location;
                     // }
                     //
-                    this.push(upValue.location);
-
+                    if (upValue.isCaptured){
+                        this.push(upValue.location);
+                    } else {
+                        this.push(this.stack[upValue.location]);
+                    }
                     break;
                 }
                 case OpCode.OP_SET_UPVALUE: {
@@ -645,7 +651,7 @@ export default class VM {
     }
 
     interpret(source) {
-        const compiler = new Compiler(source);
+        const compiler = new CompilerS(source);
         let closure = compiler.compile();
 
         if (closure === null || closure === undefined){

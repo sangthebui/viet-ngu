@@ -1,6 +1,8 @@
 import Scanner from "../1scanner.js";
 import TokenType from "./TokenType.js";
 
+import print from "../print.js";
+
 class Parser {
     current = null;
     previous = null;
@@ -9,7 +11,8 @@ class Parser {
     scanner = null;
     allTokens = [];
 
-    constructor(source){
+
+    setSource(source){
         this.scanner = new Scanner(source);
     }
 
@@ -73,4 +76,6 @@ class Parser {
     }
 }
 
-export default Parser;
+const parser = new Parser();
+
+export default parser;
