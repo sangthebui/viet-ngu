@@ -6,7 +6,7 @@ export default class Scanner {
     start = 0;
     line = 1;
 
-    constructor(source){
+    setSource(source){
         this.source = source;
     }
 

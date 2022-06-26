@@ -61,7 +61,7 @@ export default class VM {
 
     clockNative(argCount, value){
         //wrap the clock value inside an ObjectLox
-        return new ObjectLox(new Date() / 1000, ValueType.NUMBER);
+        return new Date() / 1000;
     }
 
     isFalsey(value){
@@ -206,7 +206,7 @@ export default class VM {
         const receiver = this.peek(0);
         //TODO GC BoundMethod
         const boundMethod = {
-            type: ValueType.BOUND_METHOD,
+            type: CallableType.BOUND_METHOD,
             receiver,
             method: klass.methods[name],
         };

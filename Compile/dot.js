@@ -11,11 +11,11 @@ const dot = (canAssign, env) =>{
     let identifierConstantIndex = current.closure.identifierConstant(identifierName);
 
     if (canAssign && parser.match(TokenType.TOKEN_EQUAL)){
-        expression({current, parser});
-        current.emitBytes(OpCode.OP_SET_PROPERTY, identifierConstantIndex);
+        expression(env);
+        current.closure.emitBytes(OpCode.OP_SET_PROPERTY, identifierConstantIndex);
     } else if (parser.match(TokenType.TOKEN_LEFT_PAREN)){
         //combine OP_GET_PROPERTY and OP_CALL
-        let argCount = argumentList({current, parser});
+        let argCount = argumentList(env);
         //3 bytes
         current.closure.emitBytes(OpCode.OP_INVOKE, identifierConstantIndex);
         current.closure.emitByte(argCount);

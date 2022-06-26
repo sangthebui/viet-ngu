@@ -3,6 +3,7 @@ import OpCode from "./OpCode.js";
 import CallableType from "./CallableType.js";
 
 import parser from "./Parser.js";
+import CompilerType from "./CompilerType.js";
 
 
 const UINT8_COUNT  = 255;
@@ -53,8 +54,8 @@ class Callable {
         this.emitBytes(OpCode.OP_CONSTANT, constantIndex);
     }
 
-    emitReturn() {
-        if (this.type === ValueType.INITIALIZER){
+    emitReturn(compileType) {
+        if (compileType === CompilerType.INITIALIZER){
             this.emitBytes(OpCode.OP_GET_LOCAL, 0);
         } else {
             this.emitByte(OpCode.OP_NIL);

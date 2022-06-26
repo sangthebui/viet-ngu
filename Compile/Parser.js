@@ -11,9 +11,12 @@ class Parser {
     scanner = null;
     allTokens = [];
 
+    constructor() {
+        this.scanner = new Scanner();
+    }
 
     setSource(source){
-        this.scanner = new Scanner(source);
+        this.scanner.setSource(source);
     }
 
     //movement

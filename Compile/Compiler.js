@@ -1,6 +1,6 @@
-import ClosureType from "./ClosureType.js";
 import OpCode from "./OpCode.js";
 import parser from "./Parser.js";
+import CompilerType from "./CompilerType.js";
 
 const UINT8_COUNT  = 255;
 
@@ -11,22 +11,22 @@ class Compiler {
     scopeDepth = 0;
     localCount = 0;
     upvalues = [];
-    type= ClosureType.SCRIPT;
+    type= CompilerType.SCRIPT;
 
 
     constructor(closure) {
         this.closure = closure;
     }
 
-    addLocal(name){
+    addLocal(name, depth=-1, isCaptured=false){
         if (this.localCount === UINT8_COUNT){
             parser.error("Too many local variables in function.");
         }
         //TODO GC => locals
         this.locals[this.localCount++] = {
             name,
-            depth: -1,
-            isCaptured: false,
+            depth: depth,
+            isCaptured: isCaptured,
         };
     }
 

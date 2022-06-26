@@ -1,9 +1,9 @@
 
-const ClosureType = Object.freeze({
+const CompilerType = Object.freeze({
     CLOSURE: Symbol('CLOSURE'),
     METHOD: Symbol('METHOD'),
     INITIALIZER: Symbol('INITIALIZER'),
     SCRIPT: Symbol('SCRIPT'),
 });
 
-export default ClosureType;
+export default CompilerType;
