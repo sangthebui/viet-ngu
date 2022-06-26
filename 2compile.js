@@ -4,7 +4,6 @@ import Callable from "./Compile/Objects/Callable.js";
 import Compiler from "./Compile/Objects/Compiler.js";
 
 import declaration from "./Compile/Declarations/declaration.js";
-import endCompiler from "./Compile/Objects/endCompiler.js";
 
 export default class CompilerS {
     //TODO GC => object
@@ -52,7 +51,7 @@ export default class CompilerS {
             //each declaration is in charge of advancing the next token.
             declaration(env);
         }
-        const closure = endCompiler(env);
+        const closure = env.current.endCompiler(env);
 
         return parser.hadError ? null : closure;
     }

@@ -103,6 +103,16 @@ class Compiler {
         }
     }
 
+    endCompiler(env){
+        //return to the outer function
+        this.closure.emitReturn(this.type);
+        let closure = this.closure; //return the function object
+        // set the enclosing function to be this function, essentially pop this function off the stack
+        env.current = this.enclosing;
+
+        return closure;
+    }
+
 }
 
 export default Compiler;

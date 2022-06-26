@@ -9,7 +9,6 @@ import Callable from "../Objects/Callable.js";
 import Compiler from "../Objects/Compiler.js";
 import blockStatement from "../Statements/blockStatement.js";
 import { funParameters} from "./funDeclaration.js";
-import endCompiler from "../Objects/endCompiler.js";
 import CompilerType from "../Types/CompilerType.js";
 
 const method = (env) =>{
@@ -46,7 +45,7 @@ const method = (env) =>{
     blockStatement(env);
 
     //set back the last scope
-    const newClosure = endCompiler(env);
+    const newClosure = env.current.endCompiler(env);
 
     current.closure.emitBytes(OpCode.OP_CLOSURE, newClosure);
 
