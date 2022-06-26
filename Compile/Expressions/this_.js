@@ -1,4 +1,4 @@
-import parser from "./Parser.js";
+import parser from "../Objects/Parser.js";
 import identifier from "./identifier.js";
 
 const this_ = (_, env) => {

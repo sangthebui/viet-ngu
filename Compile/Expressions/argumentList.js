@@ -1,5 +1,5 @@
-import TokenType from "./TokenType.js";
-import parser from "./Parser.js";
+import TokenType from "../Types/TokenType.js";
+import parser from "../Objects/Parser.js";
 import expression from "./expression.js";
 
 const argumentList = (env) =>{

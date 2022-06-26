@@ -1,5 +1,5 @@
-import {ObjectLox, ValueType} from "../Objects.js";
-import parser from "./Parser.js";
+import {ObjectLox, ValueType} from "../../Objects.js";
+import parser from "../Objects/Parser.js";
 
 const string = (_, env) => {
     const { current} = env;

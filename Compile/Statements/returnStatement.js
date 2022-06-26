@@ -1,8 +1,8 @@
-import parser from "../Parser.js";
-import TokenType from "../TokenType.js";
-import expression from "../expression.js";
-import OpCode from "../OpCode.js";
-import CompilerType from "../CompilerType.js";
+import parser from "../Objects/Parser.js";
+import TokenType from "../Types/TokenType.js";
+import expression from "../Expressions/expression.js";
+import OpCode from "../Types/OpCode.js";
+import CompilerType from "../Types/CompilerType.js";
 
 const returnStatement = (env) =>{
     const {current} = env;

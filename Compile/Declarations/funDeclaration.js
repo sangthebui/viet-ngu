@@ -1,12 +1,12 @@
-import parser from "../Parser.js";
-import TokenType from "../TokenType.js";
-import Callable from "../Callable.js";
-import Compiler from "../Compiler.js";
-import OpCode from "../OpCode.js";
+import parser from "../Objects/Parser.js";
+import TokenType from "../Types/TokenType.js";
+import Callable from "../Objects/Callable.js";
+import Compiler from "../Objects/Compiler.js";
+import OpCode from "../Types/OpCode.js";
 import blockStatement from "../Statements/blockStatement.js";
 
-import endCompiler from "../endCompiler.js";
-import CompilerType from "../CompilerType.js";
+import endCompiler from "../Objects/endCompiler.js";
+import CompilerType from "../Types/CompilerType.js";
 
 export const funParameters = (env) => {
     const {current} = env;

@@ -1,8 +1,8 @@
-import TokenType from "./TokenType.js";
-import OpCode from "./OpCode.js";
+import TokenType from "../Types/TokenType.js";
+import OpCode from "../Types/OpCode.js";
 
 import namedVariable from "./namedVariable.js";
-import parser from "./Parser.js";
+import parser from "../Objects/Parser.js";
 
 const super_ = (_, env) =>{
     const {currentClass, current} = env

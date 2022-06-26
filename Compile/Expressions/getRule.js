@@ -1,5 +1,5 @@
-import TokenType from "./TokenType.js";
-import Precedence from "./Precedence.js";
+import TokenType from "../Types/TokenType.js";
+import Precedence from "../Types/Precedence.js";
 
 import number from "./number.js";
 import string from "./string.js";

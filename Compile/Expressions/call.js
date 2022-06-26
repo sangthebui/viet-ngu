@@ -1,4 +1,4 @@
-import OpCode from "./OpCode.js";
+import OpCode from "../Types/OpCode.js";
 
 import argumentList from "./argumentList.js";
 

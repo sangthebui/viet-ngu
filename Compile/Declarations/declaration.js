@@ -1,6 +1,6 @@
-import TokenType from "../TokenType.js";
-import parser from "../Parser.js";
-import synchronize from "../synchronize.js";
+import TokenType from "../Types/TokenType.js";
+import parser from "../Objects/Parser.js";
+import synchronize from "./synchronize.js";
 
 import statement from "../Statements/statement.js";
 import classDeclaration from "./classDeclaration.js";

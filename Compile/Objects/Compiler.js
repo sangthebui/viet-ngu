@@ -1,6 +1,6 @@
-import OpCode from "./OpCode.js";
+import OpCode from "../Types/OpCode.js";
 import parser from "./Parser.js";
-import CompilerType from "./CompilerType.js";
+import CompilerType from "../Types/CompilerType.js";
 
 const UINT8_COUNT  = 255;
 

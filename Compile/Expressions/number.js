@@ -1,4 +1,4 @@
-import parser from "./Parser.js";
+import parser from "../Objects/Parser.js";
 
 const number = (_, env) =>{
     const { current} = env;

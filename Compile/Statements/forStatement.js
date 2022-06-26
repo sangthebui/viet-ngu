@@ -1,10 +1,10 @@
-import parser from "../Parser.js";
-import TokenType from "../TokenType.js";
-import OpCode from "../OpCode.js";
+import parser from "../Objects/Parser.js";
+import TokenType from "../Types/TokenType.js";
+import OpCode from "../Types/OpCode.js";
 
 import expressionStatement from "./expressionStatement.js";
 import statement from "./statement.js";
-import expression from "../expression.js";
+import expression from "../Expressions/expression.js";
 import varDeclaration from "../Declarations/varDeclaration.js";
 
 const forStatement = (env) =>{

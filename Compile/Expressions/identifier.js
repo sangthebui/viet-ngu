@@ -1,4 +1,4 @@
-import parser from "./Parser.js";
+import parser from "../Objects/Parser.js";
 import namedVariable from "./namedVariable.js";
 
 const identifier = (canAssign, env) =>{

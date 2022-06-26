@@ -1,7 +1,7 @@
-import Precedence from "./Precedence.js";
-import TokenType from "./TokenType.js";
-import OpCode from "./OpCode.js";
-import parser from "./Parser.js";
+import Precedence from "../Types/Precedence.js";
+import TokenType from "../Types/TokenType.js";
+import OpCode from "../Types/OpCode.js";
+import parser from "../Objects/Parser.js";
 import parsePrecedence from "./parsePrecedence.js";
 
 

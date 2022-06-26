@@ -1,7 +1,7 @@
 import CompilerS from './2compile.js';
-import OpCode from "./Compile/OpCode.js";
+import OpCode from "./Compile/Types/OpCode.js";
 import InterpretResult from "./Virtual_Machine/InterpretResult.js";
-import CallableType from "./Compile/CallableType.js";
+import CallableType from "./Compile/Types/CallableType.js";
 
 import {
     ObjectLox, ValueType,

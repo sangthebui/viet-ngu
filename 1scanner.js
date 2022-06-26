@@ -1,4 +1,4 @@
-import TokenType from "./Compile/TokenType.js";
+import TokenType from "./Compile/Types/TokenType.js";
 
 export default class Scanner {
     source = '';

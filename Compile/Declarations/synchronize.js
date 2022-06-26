@@ -1,5 +1,5 @@
-import TokenType from "./TokenType.js";
-import parser from "./Parser.js";
+import TokenType from "../Types/TokenType.js";
+import parser from "../Objects/Parser.js";
 
 const synchronize = () => {
     if (parser.previous.type === TokenType.TOKEN_SEMICOLON) return;

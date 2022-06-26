@@ -1,16 +1,16 @@
-import parser from "../Parser.js";
-import TokenType from "../TokenType.js";
-import CallableType from "../CallableType.js";
-import OpCode from "../OpCode.js";
+import parser from "../Objects/Parser.js";
+import TokenType from "../Types/TokenType.js";
+import CallableType from "../Types/CallableType.js";
+import OpCode from "../Types/OpCode.js";
 
-import namedVariable from "../namedVariable.js";
-import identifier from "../identifier.js";
-import Callable from "../Callable.js";
-import Compiler from "../Compiler.js";
+import namedVariable from "../Expressions/namedVariable.js";
+import identifier from "../Expressions/identifier.js";
+import Callable from "../Objects/Callable.js";
+import Compiler from "../Objects/Compiler.js";
 import blockStatement from "../Statements/blockStatement.js";
 import { funParameters} from "./funDeclaration.js";
-import endCompiler from "../endCompiler.js";
-import CompilerType from "../CompilerType.js";
+import endCompiler from "../Objects/endCompiler.js";
+import CompilerType from "../Types/CompilerType.js";
 
 const method = (env) =>{
     let {current} = env;

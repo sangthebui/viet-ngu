@@ -1,7 +1,7 @@
-import Scanner from "../1scanner.js";
-import TokenType from "./TokenType.js";
+import Scanner from "../../1scanner.js";
+import TokenType from "../Types/TokenType.js";
 
-import print from "../print.js";
+import print from "../../print.js";
 
 class Parser {
     current = null;

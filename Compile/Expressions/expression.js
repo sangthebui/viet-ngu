@@ -1,4 +1,4 @@
-import Precedence from "./Precedence.js";
+import Precedence from "../Types/Precedence.js";
 import parsePrecedence from "./parsePrecedence.js";
 
 const expression = (env) =>{

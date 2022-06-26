@@ -1,5 +1,5 @@
-import OpCode from "./OpCode.js";
-import Precedence from "./Precedence.js";
+import OpCode from "../Types/OpCode.js";
+import Precedence from "../Types/Precedence.js";
 
 import parsePrecedence from "./parsePrecedence.js";
 

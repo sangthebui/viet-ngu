@@ -1,10 +1,10 @@
-import TokenType from "./Compile/TokenType.js";
-import parser from "./Compile/Parser.js";
-import Callable from "./Compile/Callable.js";
-import Compiler from "./Compile/Compiler.js";
+import TokenType from "./Compile/Types/TokenType.js";
+import parser from "./Compile/Objects/Parser.js";
+import Callable from "./Compile/Objects/Callable.js";
+import Compiler from "./Compile/Objects/Compiler.js";
 
 import declaration from "./Compile/Declarations/declaration.js";
-import endCompiler from "./Compile/endCompiler.js";
+import endCompiler from "./Compile/Objects/endCompiler.js";
 
 export default class CompilerS {
     //TODO GC => object

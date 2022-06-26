@@ -1,7 +1,7 @@
-import expression from "../expression.js";
-import parser from "../Parser.js";
-import TokenType from "../TokenType.js";
-import OpCode from "../OpCode.js";
+import expression from "../Expressions/expression.js";
+import parser from "../Objects/Parser.js";
+import TokenType from "../Types/TokenType.js";
+import OpCode from "../Types/OpCode.js";
 
 const expressionStatement = (env) => {
     const {current} = env;
