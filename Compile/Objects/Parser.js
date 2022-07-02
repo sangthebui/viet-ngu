@@ -9,12 +9,15 @@ class Parser {
     hadError = false;
     panicMode = false;
     scanner = null;
-    allTokens = [];
+    allTokens = []; //debugging purposes
+    //for continue and break statement
+    insideLoop = false;
+    loopStart = -1; //for continue statement only
     //for breaks statement
-    loopDepth = 0;
-    breakUsable = false;
     innerMostFlowForBreak = -1; // for especially break statement within loop
     detectBreak = false; //for break statement
+    insideSwitchCase = false; //for break statement
+
 
     constructor() {
         this.scanner = new Scanner();
@@ -81,6 +84,11 @@ class Parser {
 
     error(message){
         this.errorAt(this.previous, message);
+    }
+
+    resetLoopVariables(){
+        this.insideLoop = false;
+        this.loopStart = -1;
     }
 }
 

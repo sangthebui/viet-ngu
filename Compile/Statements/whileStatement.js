@@ -8,7 +8,7 @@ import statement from "./statement.js";
 const whileStatement = (env) => {
     const {current} = env;
     //start the while loop
-    parser.breakUsable = true;
+    parser.insideLoop = true;
 
     const loopStart = current.closure.code.length;
     //check the condition
@@ -18,6 +18,8 @@ const whileStatement = (env) => {
 
     const exitJump = current.closure.emitJump(OpCode.OP_JUMP_IF_FALSE);
     current.closure.emitByte(OpCode.OP_POP);
+    //loop start for continue
+    parser.loopStart = current.closure.code.length
     statement(env);
 
     current.closure.emitLoop(loopStart);
@@ -37,7 +39,7 @@ const whileStatement = (env) => {
         current.closure.emitByte(OpCode.OP_POP);
     }
 
-    parser.breakUsable = false;
+    parser.resetLoopVariables();
 }
 
 export default whileStatement;

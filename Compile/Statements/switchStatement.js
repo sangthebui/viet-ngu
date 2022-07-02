@@ -6,7 +6,7 @@ import statement from "./statement.js";
 
 const caseClause = (env) => {
     const {current} = env;
-    parser.breakUsable = true;
+    parser.insideSwitchCase = true;
     //parse the expression
     current.closure.emitByte(OpCode.OP_DUP);
     expression(env);
@@ -23,7 +23,7 @@ const caseClause = (env) => {
     current.closure.emitByte(OpCode.OP_POP);
 
     //jump past everything
-    parser.breakUsable = false;
+    parser.insideSwitchCase = false;
     if (parser.detectBreak){
         //wait until the end of the switch statement to patch the break.
 

@@ -48,6 +48,7 @@ const TokenType = Object.freeze({
     TOKEN_WHILE: Symbol( 'TOKEN_WHILE'),
     TOKEN_EOF: Symbol( 'TOKEN_EOF'),
     TOKEN_EMPTY: Symbol( 'TOKEN_EMPTY'),
+    TOKEN_CONTINUE: Symbol('TOKEN_CONTINUE'),
 
 });
 

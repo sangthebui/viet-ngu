@@ -114,6 +114,7 @@ export default class Scanner {
                 switch (innerCharacter) {
                     case 'a': return this.checkKeyword('case', TokenType.TOKEN_CASE);
                     case 'l':return this.checkKeyword('class', TokenType.TOKEN_CLASS);
+                    case 'o': return this.checkKeyword('continue', TokenType.TOKEN_CONTINUE);
                 }
             }
             case 'd': return this.checkKeyword('default', TokenType.TOKEN_DEFAULT);

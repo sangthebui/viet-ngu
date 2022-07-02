@@ -9,7 +9,7 @@ import varDeclaration from "../Declarations/varDeclaration.js";
 
 const forStatement = (env) =>{
     const {current} = env;
-    parser.breakUsable = true;
+    parser.insideLoop = true;
     //Note, no braces within the for statement
     current.beginScope();
     parser.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after "for".');
@@ -25,9 +25,7 @@ const forStatement = (env) =>{
 
     //
     let loopStart = current.closure.code.length;
-
     let exitJump = -1;
-
     // for exit condition
     if (!parser.match(TokenType.TOKEN_SEMICOLON)){
         expression(env);
@@ -43,9 +41,10 @@ const forStatement = (env) =>{
     if (!parser.match(TokenType.TOKEN_RIGHT_PAREN)){
         const bodyJump = current.closure.emitJump(OpCode.OP_JUMP);
         const incrementStart = current.closure.code.length;
+        //for continue (jump back before the increment condition)
+        parser.loopStart = current.closure.code.length;
         expression(env);
         current.closure.emitByte(OpCode.OP_POP);
-        parser.consume(TokenType.TOKEN_SEMICOLON, 'Expect ";" after loop increment.');
         parser.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after for clauses.');
 
         current.closure.emitLoop(loopStart);
@@ -72,7 +71,7 @@ const forStatement = (env) =>{
     }
 
     current.endScope();
-    parser.breakUsable = false;
+    parser.resetLoopVariables();
 }
 
 export default forStatement;

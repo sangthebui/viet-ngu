@@ -10,6 +10,7 @@ import printStatement from "./printStatement.js";
 import forStatement from "./forStatement.js";
 import switchStatement from "./switchStatement.js";
 import breakStatement from "./breakStatement.js";
+import continueStatement from "./continueStatement.js";
 
 const statement = (env) =>{
     const {current} = env;
@@ -17,7 +18,9 @@ const statement = (env) =>{
         printStatement(env);
     } else if (parser.match(TokenType.TOKEN_BREAK)){
         breakStatement(env);
-    }else if (parser.match(TokenType.TOKEN_FOR)){
+    } else if (parser.match(TokenType.TOKEN_CONTINUE)){
+        continueStatement(env);
+    } else if (parser.match(TokenType.TOKEN_FOR)){
         forStatement(env);
     } else if (parser.match(TokenType.TOKEN_IF)){
         ifStatement(env);
