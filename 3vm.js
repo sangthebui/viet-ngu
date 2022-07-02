@@ -44,7 +44,8 @@ export default class VM {
                 runtimeError("Unknown instruction:");
                 return InterpretResult.INTERPRET_RUNTIME_ERROR;
             }
-            result = opCodeObj[instruction](this.env);
+            const opCodeFunction = opCodeObj[instruction];
+            result = opCodeFunction(this.env);
         } //end while
 
         return result;

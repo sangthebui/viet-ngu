@@ -9,13 +9,14 @@ import ifStatement from "./ifStatement.js";
 import printStatement from "./printStatement.js";
 import forStatement from "./forStatement.js";
 import switchStatement from "./switchStatement.js";
+import breakStatement from "./breakStatement.js";
 
 const statement = (env) =>{
     const {current} = env;
     if (parser.match(TokenType.TOKEN_PRINT)) {
         printStatement(env);
     } else if (parser.match(TokenType.TOKEN_BREAK)){
-        // breakStatement(env);
+        breakStatement(env);
     }else if (parser.match(TokenType.TOKEN_FOR)){
         forStatement(env);
     } else if (parser.match(TokenType.TOKEN_IF)){

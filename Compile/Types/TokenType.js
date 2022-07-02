@@ -26,7 +26,7 @@ const TokenType = Object.freeze({
     TOKEN_NUMBER: Symbol( 'TOKEN_NUMBER'),
     // Keywords.
     TOKEN_AND: Symbol('TOKEN_AND'),
-    TOKEN_BREAK: Symbol('TOKEN_BREAK'),
+    TOKEN_BREAK: Symbol('TOKEN_BREAK'), //add new
     TOKEN_CASE: Symbol('TOKEN_CASE'),
     TOKEN_CLASS: Symbol( 'TOKEN_CLASS'),
     TOKEN_COLON: Symbol('TOKEN_COLON'),
@@ -41,7 +41,7 @@ const TokenType = Object.freeze({
     TOKEN_PRINT : Symbol('TOKEN_PRINT'),
     TOKEN_RETURN: Symbol( 'TOKEN_RETURN'),
     TOKEN_SUPER: Symbol( 'TOKEN_SUPER'),
-    TOKEN_SWITCH: Symbol('TOKEN_SWITCH'),
+    TOKEN_SWITCH: Symbol('TOKEN_SWITCH'), //add new
     TOKEN_THIS: Symbol( 'TOKEN_THIS'),
     TOKEN_TRUE: Symbol( 'TOKEN_TRUE'),
     TOKEN_VAR: Symbol( 'TOKEN_VAR'),

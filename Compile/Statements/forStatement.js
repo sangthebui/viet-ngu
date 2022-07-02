@@ -9,9 +9,9 @@ import varDeclaration from "../Declarations/varDeclaration.js";
 
 const forStatement = (env) =>{
     const {current} = env;
+    parser.breakUsable = true;
     //Note, no braces within the for statement
     current.beginScope();
-
     parser.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after "for".');
 
     //for initializer
@@ -45,6 +45,7 @@ const forStatement = (env) =>{
         const incrementStart = current.closure.code.length;
         expression(env);
         current.closure.emitByte(OpCode.OP_POP);
+        parser.consume(TokenType.TOKEN_SEMICOLON, 'Expect ";" after loop increment.');
         parser.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after for clauses.');
 
         current.closure.emitLoop(loopStart);
@@ -61,7 +62,17 @@ const forStatement = (env) =>{
         current.closure.patchJump(exitJump);
         current.closure.emitByte(OpCode.OP_POP);
     }
-    current.beginScope();
+
+    if (parser.detectBreak){
+        //only patch the breakJump if break exist.
+        current.closure.patchJump(parser.innerMostFlowForBreak);
+
+        parser.detectBreak = false; //reset the break statement
+        parser.innerMostFlowForBreak = -1;
+    }
+
+    current.endScope();
+    parser.breakUsable = false;
 }
 
 export default forStatement;

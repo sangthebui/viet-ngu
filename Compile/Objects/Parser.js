@@ -10,6 +10,11 @@ class Parser {
     panicMode = false;
     scanner = null;
     allTokens = [];
+    //for breaks statement
+    loopDepth = 0;
+    breakUsable = false;
+    innerMostFlowForBreak = -1; // for especially break statement within loop
+    detectBreak = false; //for break statement
 
     constructor() {
         this.scanner = new Scanner();

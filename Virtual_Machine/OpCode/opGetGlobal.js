@@ -6,7 +6,7 @@ const opGetGlobal = (env) => {
     const {frame, globals} = env;
     const key = frame.read_string();
     const value = globals[key];
-    if (!value){
+    if (value === undefined || value === null){
         runtimeError(`Undefined variable ${key}`);
         return InterpretResult.INTERPRET_RUNTIME_ERROR;
     }
