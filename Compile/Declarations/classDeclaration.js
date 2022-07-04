@@ -59,6 +59,37 @@ const method = (env) =>{
     current.closure.emitBytes(OpCode.OP_METHOD, identifierConstantIndex);
 }
 
+const field = (env) => {
+
+}
+
+const inheritance = (classIdentifier, env) => {
+    const {currentClass, current} = env;
+    //check for inheritance
+    if (parser.match(TokenType.TOKEN_EXTENDS)){
+        parser.consume(TokenType.TOKEN_IDENTIFIER, 'Expect superclass name.');
+        const superClassIdentifier = parser.previous.payload;
+        //namedVariable check where the identifier is
+        identifier(false, env);
+
+        //check that the class and superclass are different
+        if (classIdentifier === superClassIdentifier){
+            parser.error("A class can't inherit from itself.");
+        }
+
+        current.beginScope();
+        current.addLocal("super");
+        //markInitialized
+        current.locals[ current.localCount - 1 ].depth = current.scopeDepth;
+
+        //namedVariable
+        namedVariable(classIdentifier, false, env);
+
+        current.closure.emitByte(OpCode.OP_INHERIT);
+        currentClass.hasSuperClass = true;
+    }
+}
+
 const classDeclaration = (env) => {
     let {current, currentClass} = env;
     parser.consume (TokenType.TOKEN_IDENTIFIER , "Expect class name." );
@@ -111,28 +142,7 @@ const classDeclaration = (env) => {
     env.currentClass = compilerClass;
 
     //check for inheritance
-    if (parser.match(TokenType.TOKEN_LESS)){
-        parser.consume(TokenType.TOKEN_IDENTIFIER, 'Expect superclass name.');
-        const superClassIdentifier = parser.previous.payload;
-        //namedVariable check where the identifier is
-        identifier(false, env);
-
-        //check that the class and superclass are different
-        if (classIdentifier === superClassIdentifier){
-            parser.error("A class can't inherit from itself.");
-        }
-
-        current.beginScope();
-        current.addLocal("super");
-        //markInitialized
-        current.locals[ current.localCount - 1 ].depth = current.scopeDepth;
-
-        //namedVariable
-        namedVariable(classIdentifier, false, env);
-
-        current.closure.emitByte(OpCode.OP_INHERIT);
-        currentClass.hasSuperClass = true;
-    }
+    inheritance(classIdentifier, env);
 
     namedVariable(classIdentifier, false, env);
 
@@ -147,7 +157,7 @@ const classDeclaration = (env) => {
     current.closure.emitByte(OpCode.OP_POP);
 
     if (env.currentClass.hasSuperClass){
-        current.beginScope();
+        current.endScope();
     }
 
     env.currentClass = env.currentClass.enclosing;

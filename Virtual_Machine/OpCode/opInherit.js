@@ -1,11 +1,11 @@
 import stack from "../Stack.js";
-import {ValueType} from "../../Objects.js";
 import InterpretResult from "../InterpretResult.js";
+import CallableType from "../../Compile/Types/CallableType.js";
 
 const opInherit = () => {
     let superClass = stack.peek(1);
     const subClass = stack.peek(0);
-    if (superClass.type !== ValueType.CLASS) {
+    if (superClass.type !== CallableType.CLASS) {
         this.runtimeError("Superclass must be a class.");
         return InterpretResult.INTERPRET_RUNTIME_ERROR;
     }

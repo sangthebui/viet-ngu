@@ -7,3 +7,4 @@ Lox language implementation in JS
 - [ ] increment/decrement
 - [ ] complete class
 - [x] continue statement
+- [ ] use a hash table for constants array.

@@ -3,6 +3,7 @@ import OpCode from "../Types/OpCode.js";
 
 import namedVariable from "./namedVariable.js";
 import parser from "../Objects/Parser.js";
+import argumentList from "./argumentList.js";
 
 const super_ = (_, env) =>{
     const {currentClass, current} = env
@@ -20,7 +21,7 @@ const super_ = (_, env) =>{
     namedVariable("this", false, env);
 
     if (parser.match(TokenType.TOKEN_LEFT_PAREN)) {
-        let argCount = this.argumentList();
+        let argCount = argumentList(env);
         namedVariable("super", false, env);
         current.closure.emitBytes(OpCode.OP_SUPER_INVOKE, identifierConstantIndex);
         current.closure.emitByte(argCount);

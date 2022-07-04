@@ -118,7 +118,15 @@ export default class Scanner {
                 }
             }
             case 'd': return this.checkKeyword('default', TokenType.TOKEN_DEFAULT);
-            case 'e': return this.checkKeyword('else', TokenType.TOKEN_ELSE);
+            case 'e': {
+                if (this.current - this.start > 1) {
+                    const innerCharacter = this.source.charAt(this.start + 1);
+                    switch (innerCharacter) {
+                        case 'l':  return this.checkKeyword('else', TokenType.TOKEN_ELSE);
+                        case 'x': return this.checkKeyword('extends', TokenType.TOKEN_EXTENDS);
+                    }
+                }
+            }
             case 'f': {
                 if (this.current - this.start > 1){
                     const innerCharacter = this.source.charAt(this.start + 1);
