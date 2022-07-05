@@ -21,6 +21,7 @@ export const ValueType = Object.freeze({
     FRAMEUPVALUE: Symbol('FRAMEUPVALUE'),
     OPENUPVALUE: Symbol('OPENUPVALUE'),
     COMPILERCLASS: Symbol('COMPILERCLASS'),
+    NIL: Symbol('NIL'),
 });
 
 export const newClosure = (closure) => {
@@ -61,27 +62,11 @@ export const newInstance = (klass) => {
     const newInst = {
         type: ValueType.OBJECT,
         klass,
-        fields: {},
+        fields: klass.fields,
     };
 
     return newInst;
 };
-
-export const newFrame = (closure, ip, stackSlot) => {
-    let frame = {
-        closure: closure,
-        ip: ip,
-        stackSlot: stackSlot,
-    }
-    return frame;
-}
-
-export const newNativeFunction = (closure) => {
-    return {
-        type: ValueType.NATIVE_FUNCTION,
-        closure,
-    }
-}
 
 export class ObjectLox {
     constructor(value, type, isMarked=false) {

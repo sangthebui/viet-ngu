@@ -10,11 +10,12 @@ import Compiler from "../Objects/Compiler.js";
 import blockStatement from "../Statements/blockStatement.js";
 import { funParameters} from "./funDeclaration.js";
 import CompilerType from "../Types/CompilerType.js";
+import expression from "../Expressions/expression.js";
 
-const method = (env) =>{
+// a class method has the following signature identifier (
+// field has the following signature identifier ; or identifier = expression ;
+const method = (identifierName, env) =>{
     let {current} = env;
-    parser.consume(TokenType.TOKEN_IDENTIFIER, 'Expect method name.');
-    const identifierName = parser.previous.payload;
     const identifierConstantIndex = current.closure.identifierConstant(identifierName);
 
     //TODO GC Closure
@@ -37,7 +38,6 @@ const method = (env) =>{
     env.current.beginScope();
     //change the current with a new Compiler block
 
-    parser.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after function name.');
     //handles parameters, add each parameter to the locals object
     funParameters(env);
     parser.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after parameters.');
@@ -59,8 +59,31 @@ const method = (env) =>{
     current.closure.emitBytes(OpCode.OP_METHOD, identifierConstantIndex);
 }
 
-const field = (env) => {
+const classBody = (env) => {
+    let {current} = env;
+    //TODO better error message
+    if (!parser.match(TokenType.TOKEN_IDENTIFIER)){
+        parser.error(`Syntax Error: ${parser.previous.payload}  not recognized in class.`);
+        return false;
+    }
+    const identifierName = parser.previous.payload;
 
+    if (parser.match(TokenType.TOKEN_LEFT_PAREN)){
+        //we are a method
+        method(identifierName, env);
+    } else if (parser.match(TokenType.TOKEN_EQUAL)){
+        //we are an expression
+        expression(env);
+        const identifierConstantIndex = current.closure.identifierConstant(identifierName);
+        current.closure.emitBytes(OpCode.OP_SET_FIELD, identifierConstantIndex);
+        parser.consume(TokenType.TOKEN_SEMICOLON, 'Expect semicolon after expression.');
+    } else if (parser.match(TokenType.TOKEN_SEMICOLON)){
+        //we are a declaration
+        const identifierConstantIndex = current.closure.identifierConstant(identifierName);
+        current.closure.emitBytes(OpCode.OP_DECLARE_FIELD, identifierConstantIndex);
+    }
+
+    return true;
 }
 
 const inheritance = (classIdentifier, env) => {
@@ -101,6 +124,8 @@ const classDeclaration = (env) => {
         name: classIdentifier,
         type: CallableType.CLASS,
         methods: {},
+        fields: {},//for instance field
+        static: {}, // for static
         super: null,
     };
 
@@ -149,7 +174,9 @@ const classDeclaration = (env) => {
     parser.consume (TokenType.TOKEN_LEFT_BRACE , "Expect '{' before class body." );
 
     while(!parser.check(TokenType.TOKEN_RIGHT_BRACE) && !parser.check(TokenType.TOKEN_EOF)){
-        method(env);
+        if (!classBody(env)){
+            break; //exit the infinite loop
+        }
     }
 
     parser.consume(TokenType.TOKEN_RIGHT_BRACE , "Expect '}' after class body." );

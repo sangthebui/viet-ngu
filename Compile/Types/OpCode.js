@@ -39,6 +39,9 @@ const OpCode = Object.freeze({
     OP_DUP: Symbol('OP_DUP'),
     //add-on
     OP_EMPTY: Symbol('OP_EMPTY'),
+    OP_SET_FIELD: Symbol('OP_SET_FIELD'),
+    OP_GET_FIELD: Symbol('OP_GET_FIELD'),
+    OP_DECLARE_FIELD: Symbol('OP_DECLARE_FIELD'),
 
 });
 

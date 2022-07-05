@@ -39,6 +39,8 @@ import opClass from "./opClass.js";
 import opInherit from "./opInherit.js";
 import opMethod from "./opMethod.js";
 import opDup from "./opDup.js";
+import opDeclareField from "./opDeclareField.js";
+import opSetField from "./opSetField.js";
 
 
 
@@ -81,4 +83,6 @@ export default {
     [OpCode.OP_INHERIT]: opInherit,
     [OpCode.OP_METHOD]: opMethod,
     [OpCode.OP_DUP]: opDup,
+    [OpCode.OP_DECLARE_FIELD]: opDeclareField,
+    [OpCode.OP_SET_FIELD]: opSetField,
 }

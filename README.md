@@ -5,6 +5,7 @@ Lox language implementation in JS
 - [ ] Array
 - [ ] module system
 - [ ] increment/decrement
-- [ ] complete class
+- [x] complete class
 - [x] continue statement
 - [ ] use a hash table for constants array.
+- [ ] better error handling i.e. exit gracefully

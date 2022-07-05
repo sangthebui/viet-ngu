@@ -34,7 +34,7 @@ const opGetProperty = (env) => {
     let name = frame.read_string();
 
     //check if the field exists
-    if (instance.fields[name]) {
+    if (instance.fields[name] !== undefined) {
         let value = instance.fields[name];
 
         stack.pop();// instance

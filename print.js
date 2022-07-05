@@ -4,12 +4,10 @@ import {ValueType} from "./Objects.js";
 const print = console.log;
 
 export const printValue = (value) => {
-    //handle nil
-    if (value === null){
-        print("nil");
-        return;
-    }
     switch(value.type){
+        case ValueType.NIL:
+            print("nil");
+            break;
         case ValueType.STRING:
             print(value.value);
             break;
