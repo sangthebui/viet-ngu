@@ -8,7 +8,7 @@ const callValue = (callee, argCount, env) =>{
 
     switch(callee.type){
         case CallableType.BOUND_METHOD: {
-            //binding this to each method
+            //binding this to each method by putting the receiver on the stack
             let location = stack.length() - argCount - 1;
             stack.set(location, callee.receiver);
 
@@ -38,7 +38,9 @@ const callValue = (callee, argCount, env) =>{
             return call(callee, argCount, env);
         }
         case CallableType.NATIVE_FUNCTION: {
-            const result = callee.closure(argCount, stack.length() - 1 - argCount);
+            const slice = stack.length() - argCount;
+            const values = stack.slice(slice, stack.length());
+            const result = callee.closure(argCount, values);
             stack.slice(0, argCount + 1); // remove the argCount and the function
             stack.push(result);
             return true;

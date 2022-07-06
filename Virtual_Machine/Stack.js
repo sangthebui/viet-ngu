@@ -35,7 +35,7 @@ class Stack {
     }
 
     slice(start, end){
-        this.stack = this.stack.slice(start, end);
+        return this.stack.slice(start, end);
     }
 }
 

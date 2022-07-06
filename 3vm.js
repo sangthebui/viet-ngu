@@ -5,6 +5,7 @@ import stack from "./Virtual_Machine/Stack.js";
 import call from "./Virtual_Machine/call.js";
 import opCodeObj from "./Virtual_Machine/OpCode";
 import runtimeError from "./Virtual_Machine/runtimeError.js";
+import ArrayObject from "./Virtual_Machine/ArrayObject.js";
 
 
 //Memory management: stacks, globals, frame.closure (same as compiler.closure), frame.closure.frameUpvalues,
@@ -21,6 +22,7 @@ export default class VM {
 
     constructor() {
         this.defineNative('clock', this.clockNative);
+        this.defineNative('Array', ArrayObject);
     }
 
     defineNative(name, closure){

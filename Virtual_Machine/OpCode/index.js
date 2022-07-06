@@ -41,6 +41,8 @@ import opMethod from "./opMethod.js";
 import opDup from "./opDup.js";
 import opDeclareField from "./opDeclareField.js";
 import opSetField from "./opSetField.js";
+import opSetElement from "./opSetElement.js";
+import opGetElement from "./opGetElement.js";
 
 
 
@@ -85,4 +87,7 @@ export default {
     [OpCode.OP_DUP]: opDup,
     [OpCode.OP_DECLARE_FIELD]: opDeclareField,
     [OpCode.OP_SET_FIELD]: opSetField,
+    [OpCode.OP_SET_ELEMENT]: opSetElement,
+    [OpCode.OP_GET_ELEMENT]: opGetElement,
+
 }

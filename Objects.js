@@ -39,14 +39,6 @@ export const newKlass = (klass) => {
     return newKlass;
 }
 
-export const newObject = (object) => {
-    const newObject = {
-        ...object,
-    }
-
-    return newObject;
-}
-
 export const newMethod = (method) => {
     if (!method){
         return undefined;
