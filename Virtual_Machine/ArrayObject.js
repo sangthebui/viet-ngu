@@ -24,9 +24,18 @@ get.code.push(OpCode.OP_RETURN);
 
 //TODO add error handling index of range error
 const ArrayObject = (argCount, values) => {
-
-    //there
-    if (values.length > 0 && values[0] < 0){
+    let length = 0;
+    let elements = null;
+    //we have 2 constructors:
+    if (argCount === 0){
+        // we have empty array
+        length = 0;
+        elements = Array(0);
+    } else if (argCount > 0){
+        //we have elements of the
+        length = values.length;
+        elements = [...values];
+    } else {
         runtimeError("Can not create an array of negative length.");
     }
 
@@ -39,7 +48,7 @@ const ArrayObject = (argCount, values) => {
             get,
         },
         fields: {
-            length: values[0],
+            length: length,
         },//for instance field
         static: {}, // for static
         super: null,
@@ -50,7 +59,7 @@ const ArrayObject = (argCount, values) => {
         type: ValueType.OBJECT,
         klass: arrayKlass,
         fields: arrayKlass.fields,
-        elements: Array(values[0])
+        elements: elements
     };
 
     return arrayInstance;

@@ -39,9 +39,12 @@ const callValue = (callee, argCount, env) =>{
         }
         case CallableType.NATIVE_FUNCTION: {
             const slice = stack.length() - argCount;
-            const values = stack.slice(slice, stack.length());
+            //get all the arguments to the native functions
+            const values = stack.stack.slice(slice, stack.length());
             const result = callee.closure(argCount, values);
-            stack.slice(0, argCount + 1); // remove the argCount and the function
+            // remove the Native call and all of its argument
+            const start = stack.length() - 1 - argCount;
+            stack.slice(start); // remove the argCount and the function
             stack.push(result);
             return true;
         }

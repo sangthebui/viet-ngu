@@ -8,7 +8,7 @@ const Precedence = Object.freeze({
     PREC_TERM: 6,        // + -
     PREC_FACTOR: 7,      // * /
     PREC_UNARY:  8,       // ! -
-    PREC_CALL: 9,        // . ()
+    PREC_CALL: 9,        // . () []
     PREC_PRIMARY: 10,
 });
 

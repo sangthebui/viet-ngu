@@ -3,8 +3,6 @@
 class Stack {
     stack = [];
 
-
-
     push(value){
         return this.stack.push(value) - 1;
     }
@@ -34,8 +32,8 @@ class Stack {
         return this.stack.length;
     }
 
-    slice(start, end){
-        return this.stack.slice(start, end);
+    slice(start){
+        this.stack = this.stack.slice(0, start);
     }
 }
 

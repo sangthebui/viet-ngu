@@ -50,6 +50,8 @@ const TokenType = Object.freeze({
     TOKEN_EMPTY: Symbol( 'TOKEN_EMPTY'),
     TOKEN_CONTINUE: Symbol('TOKEN_CONTINUE'),
     TOKEN_EXTENDS: Symbol('TOKEN_EXTENDS'),
+    TOKEN_LEFT_BRACKET: Symbol('TOKEN_LEFT_BRACKET'),
+    TOKEN_RIGHT_BRACKET: Symbol('TOKEN_RIGHT_BRACKET'),
 
 });
 

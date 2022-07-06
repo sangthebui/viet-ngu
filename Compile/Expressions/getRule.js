@@ -14,6 +14,8 @@ import this_ from "./this_.js";
 import super_ from "./super_.js";
 import call from "./call.js";
 import identifier from "./identifier.js";
+import array from "./array.js";
+import subscript from "./subscript.js";
 
 //{current, parser, canAssign}
 const rules = {
@@ -59,7 +61,9 @@ const rules = {
     [ TokenType.TOKEN_ERROR ]         : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
     [ TokenType.TOKEN_EOF ]           : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
     [ TokenType.TOKEN_CASE ]          : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
-    [ TokenType.TOKEN_COLON ]          : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
+    [ TokenType.TOKEN_COLON ]         : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
+    [ TokenType.TOKEN_LEFT_BRACKET ]    : { prefix: array , infix: subscript , precedence: Precedence.PREC_CALL },
+    [ TokenType.TOKEN_RIGHT_BRACKET ]    : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
 };
 
 const getRule = (tokenType) => {

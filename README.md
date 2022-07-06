@@ -2,7 +2,7 @@
 Lox language implementation in JS
 
 # TODOs
-- [ ] Array
+- [x] Array
 - [ ] module system
 - [ ] increment/decrement
 - [x] complete class
