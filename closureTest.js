@@ -6,9 +6,7 @@ const varDecl = `
 var temp = 1; //expression()
 
 {
-//scope
     var temp = "changed";
-    // temp = "I am changed"; //need to know where I am at to look for the variable   
     print temp;
 }
 
@@ -153,7 +151,7 @@ const vm = new VM();
 // vm.interpret(varDecl);
 // vm.interpret(funDecl);
 // vm.interpret(closureExample);
-// vm.interpret(funReturn);
+vm.interpret(funReturn);
 // vm.interpret(closureExample2);
 /*
 return from outer
@@ -161,14 +159,14 @@ create inner closure
 value
 Everything is awesome.
  */
-// vm.interpret(closureExample3);//TODO no bueno
-// vm.interpret(closureExample4); //TODO no bueno
+// vm.interpret(closureExample3);
+// vm.interpret(closureExample4);
 /*
 7
 12
 Everything is awesome.
  */
-vm.interpret(closureMultipleCalls);
+// vm.interpret(closureMultipleCalls);
 
 
 

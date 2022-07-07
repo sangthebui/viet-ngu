@@ -5,7 +5,7 @@ const print = console.log;
 const classExamples = `
     class Pie {}
     var pie = Pie();
-    print pie;
+    print(pie);
 `;
 
 const classPropertiesExample = `
@@ -13,8 +13,8 @@ class Pair {}
 var pair = Pair();
 pair.first = -10 ;
 pair.second = true ;
-print pair.first;
-print !pair.second ; // 3. 
+print(pair.first);
+print(!pair.second); // 3. 
 
 `;
 
@@ -28,8 +28,8 @@ class Brunch {
 const classMethodEx2 = `
 class Scone {
     topping ( first , second ) {
-        print first;
-        print second;
+        print(first);
+        print(second);
     }
 }
 var scone = Scone();
@@ -41,14 +41,13 @@ scone.topping("berries" , "cream" );
 const classThisEx = `
 class Person {
     sayName () {
-        print this.name ;
+        print(this.name);
     }
 }
 
 var jane = Person();
 jane.name = "Jane" ;
 var method = jane.sayName ;
-print "testing between";
 method (); // ? 
 
 
@@ -58,7 +57,7 @@ const classThisEx2 = `
 class Nested {
     method(){
         fun function () {
-            print this ;
+            print(this);
         }
         function();
     }
@@ -70,12 +69,12 @@ Nested().method();
 
 
 const classThisEx3 = `
-print this;
+print(this);
 `;
 
 const classThisEx4 = `
 fun notAMethod(){
-    print this;
+    print(this);
 }`;
 
 const classInitEx = `
@@ -84,7 +83,7 @@ class CoffeeMaker {
         this.coffee = coffee ;
     }
     brew () {
-        print "Enjoy your cup of " + this.coffee ;
+        print("Enjoy your cup of " + this.coffee);
         // No reusing the grounds! this . coffee = nil ;
     }
 }
@@ -98,7 +97,7 @@ const classNotMethod = `
 class Oops {
     init () {
         fun f () {
-            print "not a method" ;
+            print("not a method");
         }
         this.field = f;
     }
@@ -108,13 +107,13 @@ class Oops {
         return 10;
     }
 }
-var oops = Oops ();
+var oops = Oops();
 oops.field();
-print "this is a test";
+print("this is a test");
 oops.field();
 // oops.met();
 // oops.met();
-print oops.met();
+print(oops.met());
 
 
 `;
@@ -123,15 +122,15 @@ print oops.met();
 const classInheritance = `
 class Doughnut {
     cook () {
-        print "Dunk in the fryer." ;
+        print("Dunk in the fryer.");
     }
 
 }
 
-class Cruller < Doughnut {
+class Cruller extends Doughnut {
     finish () {
         super.cook();
-        print "Glaze with icing." ;
+        print("Glaze with icing.");
     }
 }
 
@@ -143,11 +142,11 @@ Cruller().finish();
 const classInheritance2 = `
 class A {
     method () {
-        print "A" ;
+        print("A");
     }
 }
 
-class B < A {
+class B extends A {
     method () {
         var closure = super . method ;
         closure (); // Prints "A". 
@@ -155,6 +154,25 @@ class B < A {
 }
 
 B().method();
+
+
+`;
+
+
+const classFields = `
+class Rectangle {
+  height = 0;
+  width;
+  
+  init(height, width) {
+    this.height = height;
+    this.width = width;
+  }
+}
+
+var rect = Rectangle(10, 10);
+print(rect.width);
+print(rect.height);
 
 
 `;
@@ -166,12 +184,14 @@ const vm = new VM();
 // vm.interpret(classMethodEx2);
 // vm.interpret(classThisEx);
 // vm.interpret(classThisEx2);
-// vm.interpret(classThisEx3);
-// vm.interpret(classThisEx4);
+// vm.interpret(classThisEx3); //[line 2] Error at 'this' : can't use 'this' outside of a class.
+// vm.interpret(classThisEx4); //[line 3] Error at 'this' : can't use 'this' outside of a class.
 // vm.interpret(classInitEx);
 // vm.interpret(classNotMethod);
 // vm.interpret(classInheritance);
 // vm.interpret(classInheritance2);
+
+vm.interpret(classFields);
 
 const nativeClassArray = `
 var arr = Array();
@@ -179,7 +199,4 @@ arr.length = 10;
 print arr.length;
 `;
 
-vm.interpret(nativeClassArray);
-
-
-print('Everything is awesome.');
+// vm.interpret(nativeClassArray);
