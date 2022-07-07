@@ -20,6 +20,8 @@ const TokenType = Object.freeze({
     TOKEN_GREATER_EQUAL: Symbol('TOKEN_GREATER_EQUAL'),
     TOKEN_LESS: Symbol( 'TOKEN_LESS'),
     TOKEN_LESS_EQUAL: Symbol('TOKEN_LESS_EQUAL'),
+    TOKEN_INCREMENT: Symbol('TOKEN_INCREMENT'),
+    TOKEN_DECREMENT: Symbol('TOKEN_DECREMENT'),
     // Literals
     TOKEN_IDENTIFIER: Symbol( 'TOKEN_IDENTIFIER'),
     TOKEN_STRING: Symbol('TOKEN_STRING'),

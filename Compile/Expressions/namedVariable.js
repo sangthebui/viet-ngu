@@ -23,7 +23,22 @@ const  namedVariable = (name, canAssign, env) =>{
     if (canAssign && parser.match(TokenType.TOKEN_EQUAL)){
         expression(env);
         current.closure.emitBytes(setOp, arg);
-    } else {
+    }
+    //handle post increment and decrement
+    else if (parser.match(TokenType.TOKEN_INCREMENT)) {
+        current.closure.emitBytes(getOp, arg);
+        current.closure.emitConstant(1);
+        current.closure.emitByte(OpCode.OP_ADD);
+        current.closure.emitBytes(setOp, arg);
+    }
+    else if (parser.match(TokenType.TOKEN_DECREMENT)) {
+        current.closure.emitBytes(getOp, arg);
+        current.closure.emitConstant(1);
+        current.closure.emitByte(OpCode.OP_SUBTRACT);
+        current.closure.emitBytes(setOp, arg);
+    }
+    else
+    {
         current.closure.emitBytes(getOp, arg);
     }
 }

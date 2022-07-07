@@ -64,6 +64,8 @@ const rules = {
     [ TokenType.TOKEN_COLON ]         : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
     [ TokenType.TOKEN_LEFT_BRACKET ]    : { prefix: array , infix: subscript , precedence: Precedence.PREC_CALL },
     [ TokenType.TOKEN_RIGHT_BRACKET ]    : { prefix: null , infix: null , precedence: Precedence.PREC_NONE },
+    [ TokenType.TOKEN_INCREMENT ]    : { prefix: unary , infix: null , precedence: Precedence.PREC_INCREMENT },
+    [ TokenType.TOKEN_DECREMENT ]    : { prefix: unary , infix: null , precedence: Precedence.PREC_INCREMENT },
 };
 
 const getRule = (tokenType) => {

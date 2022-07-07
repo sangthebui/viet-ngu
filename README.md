@@ -4,7 +4,7 @@ Lox language implementation in JS
 # TODOs
 - [x] Array
 - [ ] module system
-- [ ] increment/decrement
+- [x] increment/decrement
 - [x] complete class
 - [x] continue statement
 - [ ] use a hash table for constants array.
