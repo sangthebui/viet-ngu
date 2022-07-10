@@ -3,7 +3,7 @@ import OpCode from "../Types/OpCode.js";
 import parser from "../Objects/Parser.js";
 
 const literal = (_, env) => {
-    const { current } = env;
+    const {current, parser} = env;
     switch(parser.previous.type){
         case TokenType.TOKEN_FALSE: current.closure.emitByte(OpCode.OP_FALSE); break;
         case TokenType.TOKEN_NIL: current.closure.emitByte(OpCode.OP_NIL); break;

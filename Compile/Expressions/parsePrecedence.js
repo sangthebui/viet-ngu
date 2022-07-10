@@ -1,11 +1,10 @@
 import Precedence from "../Types/Precedence.js";
 import TokenType from "../Types/TokenType.js";
 
-import parser from "../Objects/Parser.js";
-
 import getRule from "./getRule.js";
 
 const parsePrecedence = (precedence, env) =>{
+    const {parser} = env;
     parser.advance();
 
     //always a prefixRule

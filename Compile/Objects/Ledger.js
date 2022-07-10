@@ -1,10 +1,9 @@
 import OpCode from "../Types/OpCode.js";
-import parser from "./Parser.js";
 import CompilerType from "../Types/CompilerType.js";
 
 const UINT8_COUNT  = 255;
 
-class Compiler {
+class Ledger {
     closure = null;
     locals = []; //only compile locals
     enclosing = null;
@@ -12,15 +11,15 @@ class Compiler {
     localCount = 0;
     upvalues = [];
     type= CompilerType.SCRIPT;
+    parser = null;
 
-
-    constructor(closure) {
-        this.closure = closure;
+    constructor({parser}) {
+        this.parser = parser;
     }
 
     addLocal(name, depth=-1, isCaptured=false){
         if (this.localCount === UINT8_COUNT){
-            parser.error("Too many local variables in function.");
+            this.parser.error("Too many local variables in function.");
         }
         //TODO GC => locals
         this.locals[this.localCount++] = {
@@ -35,7 +34,7 @@ class Compiler {
             let local = compiler.locals[i];
             if (local.name === identifierName) {
                 if (local.depth === -1){
-                    parser.error("Can't read local variable in its own initializer.");
+                    this.parser.error("Can't read local variable in its own initializer.");
                 }
                 return i;
             }
@@ -54,7 +53,7 @@ class Compiler {
         }
 
         if (upvalueCount === UINT8_COUNT){
-            parser.error('Too many closure variables in function.');
+            this.parser.error('Too many closure variables in function.');
             return 0;
         }
         //TODO GC => compiler upvalues
@@ -113,6 +112,9 @@ class Compiler {
         return closure;
     }
 
+    setClosure(closure){
+        this.closure = closure;
+    }
 }
 
-export default Compiler;
+export default Ledger;

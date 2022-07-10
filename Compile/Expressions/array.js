@@ -1,7 +1,4 @@
-import argumentList from "./argumentList.js";
-import ArrayObject from "../../Virtual_Machine/ArrayObject.js";
 import OpCode from "../Types/OpCode.js";
-import parser from "../Objects/Parser.js";
 import TokenType from "../Types/TokenType.js";
 import expression from "./expression.js";
 import namedVariable from "./namedVariable.js";
@@ -12,6 +9,7 @@ import namedVariable from "./namedVariable.js";
 
 const MAX_ARRAY_ELEMENT = 4294967295;
 export const arrayParameters = (env) =>{
+    const {parser} = env;
     let argCount = 0;
     if (!parser.check(TokenType.TOKEN_RIGHT_BRACKET)){
         do {

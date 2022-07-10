@@ -1,8 +1,8 @@
 import TokenType from "../Types/TokenType.js";
-import parser from "../Objects/Parser.js";
 import expression from "./expression.js";
 
 const argumentList = (env) =>{
+    const {parser} = env;
     let argCount = 0;
     if (!parser.check(TokenType.TOKEN_RIGHT_PAREN)){
         do {

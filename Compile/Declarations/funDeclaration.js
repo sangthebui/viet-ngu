@@ -1,14 +1,13 @@
-import parser from "../Objects/Parser.js";
 import TokenType from "../Types/TokenType.js";
 import Callable from "../Objects/Callable.js";
-import Compiler from "../Objects/Compiler.js";
+import Ledger from "../Objects/Ledger.js";
 import OpCode from "../Types/OpCode.js";
 import blockStatement from "../Statements/blockStatement.js";
 
 import CompilerType from "../Types/CompilerType.js";
 
 export const funParameters = (env) => {
-    const {current} = env;
+    const {current, parser} = env;
     if (!parser.check(TokenType.TOKEN_RIGHT_PAREN)) {
         do {
             current.closure.arity++;
@@ -51,7 +50,7 @@ export const funParameters = (env) => {
 }
 
 const funDeclaration = (env) => {
-    let {current} = env;
+    let {current, parser} = env;
     //consume the identifier
     parser.consume(TokenType.TOKEN_IDENTIFIER, 'Expect function name.');
     const identifierName = parser.previous.payload;
@@ -80,11 +79,12 @@ const funDeclaration = (env) => {
     }
     //TODO GC Local
     // start to compile function body
-    let closure = new Callable();
+    let closure = new Callable({parser});
     closure.name = identifierName;
 
     //TODO GC Closure
-    let compiler = new Compiler(closure);
+    let compiler = new Ledger({parser});
+    compiler.setClosure(closure);
     compiler.addLocal("", 0);
     compiler.enclosing = current;
     compiler.type = CompilerType.CLOSURE;

@@ -1,11 +1,10 @@
 import TokenType from "../Types/TokenType.js";
 import OpCode from "../Types/OpCode.js";
-import parser from "../Objects/Parser.js";
 import parsePrecedence from "./parsePrecedence.js";
 import getRule from "./getRule.js";
 
 const binary = (_, env) => {
-    const {current} = env;
+    const {current, parser} = env;
     //at this point, the first operand had already been parsed and pushed onto the stack.
     //get the operator
     const operator = parser.previous.type;

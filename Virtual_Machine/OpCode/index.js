@@ -43,6 +43,8 @@ import opDeclareField from "./opDeclareField.js";
 import opSetField from "./opSetField.js";
 import opSetElement from "./opSetElement.js";
 import opGetElement from "./opGetElement.js";
+import opSetModule from "./opSetModule.js";
+import opGetModule from "./opGetModule.js";
 
 
 
@@ -89,5 +91,6 @@ export default {
     [OpCode.OP_SET_FIELD]: opSetField,
     [OpCode.OP_SET_ELEMENT]: opSetElement,
     [OpCode.OP_GET_ELEMENT]: opGetElement,
-
+    [OpCode.OP_SET_MODULE]: opSetModule,
+    [OpCode.OP_GET_MODULE]: opGetModule,
 }

@@ -120,10 +120,11 @@ export default class Scanner {
             case 'd': return this.checkKeyword('default', TokenType.TOKEN_DEFAULT);
             case 'e': {
                 if (this.current - this.start > 1) {
-                    const innerCharacter = this.source.charAt(this.start + 1);
+                    const innerCharacter = this.source.substring(this.start + 1, this.start + 3); //check two characters
                     switch (innerCharacter) {
-                        case 'l':  return this.checkKeyword('else', TokenType.TOKEN_ELSE);
-                        case 'x': return this.checkKeyword('extends', TokenType.TOKEN_EXTENDS);
+                        case 'ls':  return this.checkKeyword('else', TokenType.TOKEN_ELSE);
+                        case 'xt':  return this.checkKeyword('extends', TokenType.TOKEN_EXTENDS);
+                        case 'xp':  return this.checkKeyword('export', TokenType.TOKEN_EXPORT);
                     }
                 }
             }
@@ -134,11 +135,20 @@ export default class Scanner {
                         case 'a': return this.checkKeyword('false', TokenType.TOKEN_FALSE);
                         case 'o': return this.checkKeyword('for', TokenType.TOKEN_FOR);
                         case 'u': return this.checkKeyword('fun', TokenType.TOKEN_FUN);
+                        case 'r': return this.checkKeyword('from', TokenType.TOKEN_FROM);
                     }
                 }
                 break;
             }
-            case 'i': return this.checkKeyword('if', TokenType.TOKEN_IF);
+            case 'i': {
+                if (this.current - this.start > 1) {
+                    const innerCharacter = this.source.charAt(this.start + 1);
+                    switch (innerCharacter) {
+                        case 'f': return this.checkKeyword('if', TokenType.TOKEN_IF);
+                        case 'm':  return this.checkKeyword('import', TokenType.TOKEN_IMPORT);
+                    }
+                }
+            }
             case 'n': return this.checkKeyword('nil', TokenType.TOKEN_NIL);
             case 'o': return this.checkKeyword('or', TokenType.TOKEN_OR);
             case 'p': return this.checkKeyword('print', TokenType.TOKEN_PRINT);

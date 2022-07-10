@@ -4,8 +4,9 @@ import Callable from "../Compile/Objects/Callable.js";
 import OpCode from "../Compile/Types/OpCode.js";
 import runtimeError from "./runtimeError.js";
 
+//doesn't need the actual parser
 //create set method
-let set = new Callable();
+let set = new Callable({parser: null});
 set.name = "set";
 set.type = CallableType.METHOD;
 set.arity = 2;
@@ -15,7 +16,7 @@ set.code.push(OpCode.OP_NIL);
 set.code.push(OpCode.OP_RETURN);
 
 //create get method
-let get = new Callable();
+let get = new Callable({parser: null});
 get.name = "get";
 get.type = CallableType.METHOD;
 get.arity = 1;

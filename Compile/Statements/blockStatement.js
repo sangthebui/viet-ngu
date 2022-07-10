@@ -1,9 +1,9 @@
-import parser from "../Objects/Parser.js";
 import TokenType from "../Types/TokenType.js";
 
 import declaration from "../Declarations/declaration.js";
 
 const blockStatement =  (env) =>{
+    const {parser} = env;
     while(!parser.check(TokenType.TOKEN_RIGHT_BRACE) &&
         !parser.check(TokenType.TOKEN_EOF)){
         declaration(env);

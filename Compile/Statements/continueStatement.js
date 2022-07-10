@@ -1,10 +1,9 @@
-import parser from "../Objects/Parser.js";
 import TokenType from "../Types/TokenType.js";
 
 /// emit a jump back to the top of the loop
 // use to continue to restart a while and for
 const continueStatement = (env) => {
-    const {current} = env;
+    const {current, parser} = env;
     if (!parser.insideLoop){
         parser.error("Must be inside a loop to use 'continue'.");
     }

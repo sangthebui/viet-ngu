@@ -1,4 +1,3 @@
-import parser from "../Objects/Parser.js";
 import TokenType from "../Types/TokenType.js";
 import expression from "../Expressions/expression.js";
 import OpCode from "../Types/OpCode.js";
@@ -6,7 +5,7 @@ import OpCode from "../Types/OpCode.js";
 import statement from "./statement.js";
 
 const whileStatement = (env) => {
-    const {current} = env;
+    const {current, parser} = env;
     //start the while loop
     parser.insideLoop = true;
 

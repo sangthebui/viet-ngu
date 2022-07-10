@@ -1,11 +1,10 @@
 import OpCode from "../Types/OpCode.js";
 import TokenType from "../Types/TokenType.js";
-import parser from "../Objects/Parser.js";
 
 import expression from "./expression.js";
 
 const  namedVariable = (name, canAssign, env) =>{
-    const {current} = env;
+    const {current, parser} = env;
     let getOp , setOp ;
     let arg = current.resolveLocal(current , name); //TODO might refactor
     if ( arg !==  -1 ) {

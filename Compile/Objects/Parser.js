@@ -20,7 +20,7 @@ class Parser {
 
 
     constructor() {
-        this.scanner = new Scanner();
+        this.resetParser();
     }
 
     setSource(source){
@@ -90,8 +90,22 @@ class Parser {
         this.insideLoop = false;
         this.loopStart = -1;
     }
+
+    resetParser(){
+        this.scanner = new Scanner();
+        this.current = null;
+        this.previous = null;
+        this.hadError = false;
+        this.panicMode = false;
+        this.allTokens = []; //debugging purposes
+        //for continue and break statement
+        this.insideLoop = false;
+        this.loopStart = -1; //for continue statement only
+        //for breaks statement
+        this.innerMostFlowForBreak = -1; // for especially break statement within loop
+        this.detectBreak = false; //for break statement
+        this.insideSwitchCase = false; //for break statement
+    }
 }
 
-const parser = new Parser();
-
-export default parser;
+export default Parser;

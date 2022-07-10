@@ -1,12 +1,11 @@
 import Precedence from "../Types/Precedence.js";
 import TokenType from "../Types/TokenType.js";
 import OpCode from "../Types/OpCode.js";
-import parser from "../Objects/Parser.js";
 import parsePrecedence from "./parsePrecedence.js";
 
 //prefix unary
 const unary = (_, env) =>{
-    const {current} = env;
+    const {current, parser} = env;
     const operatorType = parser.previous.type;
     // Compile the operand
 

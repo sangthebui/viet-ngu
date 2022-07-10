@@ -1,11 +1,10 @@
 import TokenType from "../Types/TokenType.js";
 import OpCode from "../Types/OpCode.js";
-import parser from "../Objects/Parser.js";
 import expression from "./expression.js";
 import argumentList from "./argumentList.js";
 
 const dot = (canAssign, env) =>{
-    const {current} = env;
+    const {current, parser} = env;
     parser.consume(TokenType.TOKEN_IDENTIFIER, 'Expect property name after ".".');
     const identifierName = parser.previous.payload;
     let identifierConstantIndex = current.closure.identifierConstant(identifierName);

@@ -1,4 +1,3 @@
-import parser from "../Objects/Parser.js";
 import TokenType from "../Types/TokenType.js";
 import OpCode from "../Types/OpCode.js";
 
@@ -8,7 +7,7 @@ import expression from "../Expressions/expression.js";
 import varDeclaration from "../Declarations/varDeclaration.js";
 
 const forStatement = (env) =>{
-    const {current} = env;
+    const {current, parser} = env;
     parser.insideLoop = true;
     //Note, no braces within the for statement
     current.beginScope();

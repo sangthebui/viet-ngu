@@ -1,11 +1,10 @@
-import parser from "../Objects/Parser.js";
 import TokenType from "../Types/TokenType.js";
 import expression from "../Expressions/expression.js";
 import OpCode from "../Types/OpCode.js";
 import statement from "./statement.js";
 
 const caseClause = (env) => {
-    const {current} = env;
+    const {current, parser} = env;
     parser.insideSwitchCase = true;
     //parse the expression
     current.closure.emitByte(OpCode.OP_DUP);
@@ -38,13 +37,14 @@ const caseClause = (env) => {
 }
 
 const defaultClause = (env) => {
+    const {parser} = env;
     parser.consume(TokenType.TOKEN_COLON, "Expect ':' after case value.");
     //block built-in for statement
     statement(env);
 }
 
 const switchStatement = (env) => {
-    const {current} = env;
+    const {current, parser} = env;
     parser.consume(TokenType.TOKEN_LEFT_PAREN, 'Expect "(" after "switch".');
     expression(env); //put the switch expression on the stack
     parser.consume(TokenType.TOKEN_RIGHT_PAREN, 'Expect ")" after value.');

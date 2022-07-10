@@ -2,7 +2,6 @@ import {ObjectLox, ValueType} from "../../Objects.js";
 import OpCode from "../Types/OpCode.js";
 import CallableType from "../Types/CallableType.js";
 
-import parser from "./Parser.js";
 import CompilerType from "../Types/CompilerType.js";
 
 
@@ -18,12 +17,16 @@ class Callable {
     upvalueCount = 0;
     frameUpvalues = {}; //for VM upvalues,
     type = CallableType.CLOSURE;
+    parser = null;
 
+    constructor({parser}) {
+        this.parser = parser;
+    }
 
     addConstant(value){
         let count = this.constants.push(value);
         if (count > UINT8_COUNT){
-            parser.error("Too many constants in one chunk.");
+            this.parser.error("Too many constants in one chunk.");
         }
         const index = count - 1;
         return index;
@@ -41,7 +44,7 @@ class Callable {
     };
 
     emitByte (opcode) {
-        this.writeChunk(opcode, parser.previous.line);
+        this.writeChunk(opcode, this.parser.previous.line);
     };
 
     emitBytes(opCode1, opCode2) {
@@ -69,7 +72,7 @@ class Callable {
         const oneJump = 1;
         const offset = this.code.length - loopStart + oneJump;
         if (offset > UINT8_COUNT){
-            parser.error('Loop body too large.');
+            this.parser.error('Loop body too large.');
         }
 
         this.emitByte(offset);
@@ -85,7 +88,7 @@ class Callable {
         const jump = this.code.length - oneJump;
 
         if (jump > UINT8_COUNT) {
-            parser.error("Too much code to jump over.");
+            this.parser.error("Too much code to jump over.");
         }
 
         return jump;
@@ -97,7 +100,7 @@ class Callable {
         const jump = this.code.length - offset - oneJump;
 
         if (jump > UINT8_COUNT){
-            parser.error('Too much code to jump over.');
+            this.parser.error('Too much code to jump over.');
         }
         this.code[offset] = jump;
     }

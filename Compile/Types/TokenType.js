@@ -11,6 +11,8 @@ const TokenType = Object.freeze({
     TOKEN_SEMICOLON: Symbol('TOKEN_SEMICOLON'),
     TOKEN_SLASH: Symbol('TOKEN_SLASH'),
     TOKEN_STAR: Symbol('TOKEN_STAR'),
+    TOKEN_LEFT_BRACKET: Symbol('TOKEN_LEFT_BRACKET'),
+    TOKEN_RIGHT_BRACKET: Symbol('TOKEN_RIGHT_BRACKET'),
     // One or two characer tokens.
     TOKEN_BANG: Symbol('TOKEN_BANG'),
     TOKEN_BANG_EQUAL: Symbol( 'TOKEN_BANG_EQUAL'),
@@ -52,8 +54,10 @@ const TokenType = Object.freeze({
     TOKEN_EMPTY: Symbol( 'TOKEN_EMPTY'),
     TOKEN_CONTINUE: Symbol('TOKEN_CONTINUE'),
     TOKEN_EXTENDS: Symbol('TOKEN_EXTENDS'),
-    TOKEN_LEFT_BRACKET: Symbol('TOKEN_LEFT_BRACKET'),
-    TOKEN_RIGHT_BRACKET: Symbol('TOKEN_RIGHT_BRACKET'),
+    TOKEN_EXPORT: Symbol('TOKEN_EXPORT'),
+    TOKEN_IMPORT: Symbol('TOKEN_IMPORT'),
+    TOKEN_FROM: Symbol('TOKEN_FROM'),
+    TOKEN_EOF_IMPORT: Symbol('TOKEN_EOF_IMPORT'),
 
 });
 

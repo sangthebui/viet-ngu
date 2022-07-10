@@ -1,12 +1,10 @@
 import TokenType from "../Types/TokenType.js";
 import OpCode from "../Types/OpCode.js";
-import parser from "../Objects/Parser.js";
-
 import statement from "./statement.js";
 import expression from "../Expressions/expression.js";
 
 const ifStatement = (env) => {
-    const {current} = env;
+    const {current, parser} = env;
     parser.consume(TokenType.TOKEN_LEFT_PAREN, "Expect '(' after 'if'.");
     expression(env);
     parser.consume(TokenType.TOKEN_RIGHT_PAREN, "Expect ')' after condition."); // [paren]

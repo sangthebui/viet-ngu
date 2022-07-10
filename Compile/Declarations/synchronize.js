@@ -1,7 +1,7 @@
 import TokenType from "../Types/TokenType.js";
-import parser from "../Objects/Parser.js";
 
-const synchronize = () => {
+const synchronize = (env) => {
+    const{parser} = env;
     if (parser.previous.type === TokenType.TOKEN_SEMICOLON) return;
     switch (parser.current.type) {
         case TokenType.TOKEN_CLASS:

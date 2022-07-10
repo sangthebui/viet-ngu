@@ -1,4 +1,3 @@
-import parser from "../Objects/Parser.js";
 import TokenType from "../Types/TokenType.js";
 
 import blockStatement from "./blockStatement.js";
@@ -13,7 +12,7 @@ import breakStatement from "./breakStatement.js";
 import continueStatement from "./continueStatement.js";
 
 const statement = (env) =>{
-    const {current} = env;
+    const {current, parser} = env;
     if (parser.match(TokenType.TOKEN_PRINT)) {
         printStatement(env);
     } else if (parser.match(TokenType.TOKEN_BREAK)){

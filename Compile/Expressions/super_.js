@@ -2,11 +2,10 @@ import TokenType from "../Types/TokenType.js";
 import OpCode from "../Types/OpCode.js";
 
 import namedVariable from "./namedVariable.js";
-import parser from "../Objects/Parser.js";
 import argumentList from "./argumentList.js";
 
 const super_ = (_, env) =>{
-    const {currentClass, current} = env
+    const {currentClass, current, parser} = env
     if (currentClass === null){
         parser.error("can't user 'super' outside of a class.");
     } else if (!currentClass.hasSuperClass){

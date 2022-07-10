@@ -1,8 +1,8 @@
-import parser from "../Objects/Parser.js";
 import TokenType from "../Types/TokenType.js";
 import OpCode from "../Types/OpCode.js";
 
 const breakStatement = (env) => {
+    const {parser} = env;
     //check if we are in a loop or a switch/case clause
     if (!(parser.insideLoop || parser.insideSwitchCase)) {
         parser.error("Must be inside a loop or switch/case statement to use 'break'.");

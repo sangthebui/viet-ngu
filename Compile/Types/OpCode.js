@@ -44,7 +44,8 @@ const OpCode = Object.freeze({
     OP_DECLARE_FIELD: Symbol('OP_DECLARE_FIELD'),
     OP_SET_ELEMENT: Symbol('OP_SET_ELEMENT'),
     OP_GET_ELEMENT: Symbol('OP_GET_ELEMENT'),
-
+    OP_SET_MODULE: Symbol('OP_SET_MODULE'),
+    OP_GET_MODULE: Symbol('OP_GET_MODULE'),
 });
 
 export default OpCode;

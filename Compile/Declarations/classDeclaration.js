@@ -1,4 +1,3 @@
-import parser from "../Objects/Parser.js";
 import TokenType from "../Types/TokenType.js";
 import CallableType from "../Types/CallableType.js";
 import OpCode from "../Types/OpCode.js";
@@ -6,7 +5,7 @@ import OpCode from "../Types/OpCode.js";
 import namedVariable from "../Expressions/namedVariable.js";
 import identifier from "../Expressions/identifier.js";
 import Callable from "../Objects/Callable.js";
-import Compiler from "../Objects/Compiler.js";
+import Ledger from "../Objects/Ledger.js";
 import blockStatement from "../Statements/blockStatement.js";
 import { funParameters} from "./funDeclaration.js";
 import CompilerType from "../Types/CompilerType.js";
@@ -15,15 +14,16 @@ import expression from "../Expressions/expression.js";
 // a class method has the following signature identifier (
 // field has the following signature identifier ; or identifier = expression ;
 const method = (identifierName, env) =>{
-    let {current} = env;
+    let {current, parser} = env;
     const identifierConstantIndex = current.closure.identifierConstant(identifierName);
 
     //TODO GC Closure
     // compile the function body as a method
-    let closure = new Callable();
+    let closure = new Callable({parser});
     closure.name = identifierName;
     closure.type = CallableType.METHOD;
-    let compiler = new Compiler(closure);
+    let compiler = new Ledger({parser});
+    compiler.setClosure(closure);
     compiler.addLocal('this', 0);
     compiler.enclosing = current;
     compiler.type = CompilerType.METHOD;
@@ -60,7 +60,7 @@ const method = (identifierName, env) =>{
 }
 
 const classBody = (env) => {
-    let {current} = env;
+    let {current, parser} = env;
     //TODO better error message
     if (!parser.match(TokenType.TOKEN_IDENTIFIER)){
         parser.error(`Syntax Error: ${parser.previous.payload}  not recognized in class.`);
@@ -87,7 +87,7 @@ const classBody = (env) => {
 }
 
 const inheritance = (classIdentifier, env) => {
-    const {currentClass, current} = env;
+    const {currentClass, current, parser} = env;
     //check for inheritance
     if (parser.match(TokenType.TOKEN_EXTENDS)){
         parser.consume(TokenType.TOKEN_IDENTIFIER, 'Expect superclass name.');
@@ -114,7 +114,7 @@ const inheritance = (classIdentifier, env) => {
 }
 
 const classDeclaration = (env) => {
-    let {current, currentClass} = env;
+    let {current, currentClass, parser} = env;
     parser.consume (TokenType.TOKEN_IDENTIFIER , "Expect class name." );
     const classIdentifier = parser.previous.payload;
     let classConstantIndex = current.closure.identifierConstant(classIdentifier);

@@ -1,10 +1,9 @@
-import parser from "../Objects/Parser.js";
 import TokenType from "../Types/TokenType.js";
 import expression from "../Expressions/expression.js";
 import OpCode from "../Types/OpCode.js";
 
 const varDeclaration = (env) => {
-    const {current} = env;
+    const {current, parser} = env;
     //Declaring a variable only adds it to the local scope.
     const errorMessage = 'Expect variable name.';
     parser.consume(TokenType.TOKEN_IDENTIFIER, errorMessage);
