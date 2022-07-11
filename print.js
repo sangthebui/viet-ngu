@@ -1,7 +1,11 @@
 import {ValueType} from "./Objects.js";
 
 
-const print = console.log;
+// const print = console.log;
+export let standard_output = [];
+const print = (text) => {
+    standard_output.push(text);
+}
 
 export const printValue = (value) => {
     switch(value.type){
