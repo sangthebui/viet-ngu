@@ -7,10 +7,6 @@ export const markObject = (obj) => {
 }
 
 export const ValueType = Object.freeze({
-    PRIMITIVE: Symbol('PRIMITIVE'),
-    BOOLEAN: Symbol('BOOLEAN'), //memory collected
-    NIL: Symbol('NIL'),
-    NUMBER: Symbol('NUMBER'),
     STRING: Symbol('STRING'),
     BLOCK: Symbol('BLOCK'),
     CLOSURE: Symbol('CLOSURE'),
@@ -25,6 +21,7 @@ export const ValueType = Object.freeze({
     FRAMEUPVALUE: Symbol('FRAMEUPVALUE'),
     OPENUPVALUE: Symbol('OPENUPVALUE'),
     COMPILERCLASS: Symbol('COMPILERCLASS'),
+    NIL: Symbol('NIL'),
 });
 
 export const newClosure = (closure) => {
@@ -42,14 +39,6 @@ export const newKlass = (klass) => {
     return newKlass;
 }
 
-export const newObject = (object) => {
-    const newObject = {
-        ...object,
-    }
-
-    return newObject;
-}
-
 export const newMethod = (method) => {
     if (!method){
         return undefined;
@@ -65,21 +54,11 @@ export const newInstance = (klass) => {
     const newInst = {
         type: ValueType.OBJECT,
         klass,
-        fields: {},
+        fields: klass.fields,
     };
 
     return newInst;
 };
-
-export const newFrame = (closure, ip, stackSlot) => {
-    let frame = {
-        closure: closure,
-        ip: ip,
-        stackSlot: stackSlot,
-        frameUpvalues: {}
-    }
-    return frame;
-}
 
 export class ObjectLox {
     constructor(value, type, isMarked=false) {
@@ -92,10 +71,6 @@ export class ObjectLox {
 
     static isValue(value){
         switch(value.type){
-            case ValueType.PRIMITIVE:
-            case ValueType.BOOLEAN:
-            case ValueType.NIL:
-            case ValueType.NUMBER:
             case ValueType.STRING:
             case ValueType.BLOCK:
             case ValueType.CLOSURE:
@@ -119,12 +94,12 @@ export class ObjectLox {
         return typeof value === 'string' && type === ValueType.STRING;
     }
 
-    static isNumber({value, type}){
-        return Number.isFinite(value) && type === ValueType.NUMBER;
+    static isNumber(value){
+        return Number.isFinite(value);
     }
 
-    static isBoolean({value, type}){
-        return typeof value === 'boolean' && type === ValueType.BOOLEAN;
+    static isBoolean(value){
+        return typeof value === 'boolean';
     }
 
     static isNil({value, type}){
