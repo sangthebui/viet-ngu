@@ -26,7 +26,9 @@ export const arrayParameters = (env) =>{
 
 const array = (_, env) => {
     const {current} = env;
-    namedVariable("Array", false, env);
+    // namedVariable("Array", false, env);
+    namedVariable("Mang", false, env);
+
     let argCount = arrayParameters(env);
     current.closure.emitBytes(OpCode.OP_CALL, argCount);
 }

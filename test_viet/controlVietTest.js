@@ -1,4 +1,5 @@
 import {interpret} from '../3vm.js';
+import {standard_output} from "../print.js";
 
 const ifTest = `
 bien jump = dung;
@@ -170,3 +171,5 @@ interpret(switchStatement1);
 interpret(switchStatementDefaultBeforeCase);
 interpret(switchStatementCase);
 interpret(switchStatementDefault);
+
+console.log(standard_output.join("\n"));

@@ -1,4 +1,5 @@
 import {interpret} from "../3vm.js";
+import {standard_output} from "../print.js";
 
 const nativeFunction = `
 viet(clock());
@@ -99,3 +100,5 @@ interpret(arrayTestWithBracket2); // prints 3, 10, 20, 30
 interpret(arrayBracketWithGetSet); // prints 3, 33, 20, 30
 
 interpret(funTest);
+
+console.log(standard_output.join("\n"));

@@ -1,4 +1,5 @@
 import {interpret} from '../3vm.js';
+import {standard_output} from "../print.js";
 
 
 const varDecl = `
@@ -160,3 +161,4 @@ Everything is awesome.
  */
 interpret(closureMultipleCalls);
 
+console.log(standard_output.join("\n"));

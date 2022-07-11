@@ -1,4 +1,5 @@
 import {interpret} from '../3vm.js';
+import {standard_output} from "../print.js";
 
 
 const postIncrementTest = `
@@ -32,3 +33,5 @@ cho (bien i = 0; i < 10; ++i){
 interpret(postIncrementTest);
 interpret(preIncrementTest);
 interpret(incrementForTest);
+
+console.log(standard_output.join("\n"));

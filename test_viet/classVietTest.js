@@ -1,5 +1,5 @@
 import {interpret} from '../3vm.js';
-
+import {standard_output} from "../print.js";
 const classExamples = `
     lop Pie {}
     bien pie = Pie();
@@ -196,3 +196,5 @@ viet(arr.length);
 `;
 
 interpret(nativeClassArray);
+
+console.log(standard_output.join("\n"));
