@@ -3,7 +3,7 @@ import InterpretResult from "./Virtual_Machine/InterpretResult.js";
 import CallableType from "./Compile/Types/CallableType.js";
 import stack from "./Virtual_Machine/Stack.js";
 import call from "./Virtual_Machine/call.js";
-import opCodeObj from "./Virtual_Machine/OpCode";
+import opCodeObj from "./Virtual_Machine/OpCode/index.js";
 import runtimeError from "./Virtual_Machine/runtimeError.js";
 import ArrayObject from "./Virtual_Machine/ArrayObject.js";
 
