@@ -1,6 +1,6 @@
 import TokenType from "../Types/TokenType.js";
 import OpCode from "../Types/OpCode.js";
-import fs from "fs";
+// import fs from "fs";
 import {interpretModule} from "../../3vm.js";
 
 //only accept one kind of import for now
@@ -20,9 +20,9 @@ const importDeclaration = (env) => {
     const pathToCode = parser.previous.payload;
 
     //read the data from the path
-    const importSource = fs.readFileSync(pathToCode,  {encoding:'utf8', flag:'r'});
+    // const importSource = fs.readFileSync(pathToCode,  {encoding:'utf8', flag:'r'});
     //compile the importSource
-    interpretModule(importSource);
+    // interpretModule(importSource);
 
 
     current.closure.emitBytes(OpCode.OP_GET_MODULE, identifierName);//get the module name and set it into the global env
