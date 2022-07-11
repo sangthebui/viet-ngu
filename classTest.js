@@ -1,4 +1,4 @@
-import VM from './3vm.js';
+import {interpret} from './3vm.js';
 
 const print = console.log;
 
@@ -176,27 +176,25 @@ print(rect.height);
 
 
 `;
-const vm = new VM();
 
-// vm.interpret(classExamples);
-// vm.interpret(classPropertiesExample);
-// vm.interpret(classMethodEx); //prints nothing
-// vm.interpret(classMethodEx2);
-// vm.interpret(classThisEx);
-// vm.interpret(classThisEx2);
-// vm.interpret(classThisEx3); //[line 2] Error at 'this' : can't use 'this' outside of a class.
-// vm.interpret(classThisEx4); //[line 3] Error at 'this' : can't use 'this' outside of a class.
-// vm.interpret(classInitEx);
-// vm.interpret(classNotMethod);
-// vm.interpret(classInheritance);
-// vm.interpret(classInheritance2);
+interpret(classExamples);
+interpret(classPropertiesExample);
+interpret(classMethodEx); //prints nothing
+interpret(classMethodEx2);
+interpret(classThisEx);
+interpret(classThisEx2);
+interpret(classThisEx3); //[line 2] Error at 'this' : can't use 'this' outside of a class.
+interpret(classThisEx4); //[line 3] Error at 'this' : can't use 'this' outside of a class.
+interpret(classInitEx);
+interpret(classNotMethod);
+interpret(classInheritance);
+interpret(classInheritance2);
 
-vm.interpret(classFields);
+interpret(classFields);
 
 const nativeClassArray = `
-var arr = Array();
-arr.length = 10;
-print arr.length;
+var arr = Array(20, 20);
+print(arr.length);
 `;
 
-// vm.interpret(nativeClassArray);
+interpret(nativeClassArray);
