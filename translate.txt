@@ -1,18 +1,31 @@
 
-and = va
-class = lop
-else = khac
-false = sai
-for = cho
-fun = ham
-if = neu
-nil = nil
-or = hoac
-print = viet
-return =  tra
-super = sieu
-this = nay
-true = dung
-var = bien
-while = trong_khi
+and = và = va
+break = nghỉ = nghi
+case = trường hợp = truong_hop
+class = lớp = lop
+continue = tiếp = tiep
+else = khác = khac
+extends = theo = theo
+export = xuất = xuat
+default = khiếm diện = khiem_dien
+false = sai = sai
+for = cho = cho
+from = từ đây = tu_day
+fun = hàm = ham
+if = nếu = neu
+import = nhập = nhap
+nil = vô giá = vo_gia
+or = hoặc = hoac
+print = viết = viet
+return =  trả = tra
+super =  gốc = goc
+switch = đởi = doi
+this = này = nay
+true = đúng = dung
+var = biến = bien
+while = trông khi = trong_khi
+
+//Array = mảng = mang
+
+//this and super, check local variable
 

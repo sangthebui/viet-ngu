@@ -4,6 +4,7 @@ const TokenType = Object.freeze({
     TOKEN_RIGHT_PAREN: Symbol('TOKEN_RIGHT_PAREN'),
     TOKEN_LEFT_BRACE: Symbol('TOKEN_LEFT_BRACE'),
     TOKEN_RIGHT_BRACE: Symbol('TOKEN_RIGHT_BRACE'),
+    TOKEN_COLON: Symbol('TOKEN_COLON'),
     TOKEN_COMMA: Symbol('TOKEN_COMMA'),
     TOKEN_DOT: Symbol('TOKEN_DOT'),
     TOKEN_MINUS: Symbol('TOKEN_MINUS'),
@@ -33,13 +34,17 @@ const TokenType = Object.freeze({
     TOKEN_BREAK: Symbol('TOKEN_BREAK'), //add new
     TOKEN_CASE: Symbol('TOKEN_CASE'),
     TOKEN_CLASS: Symbol( 'TOKEN_CLASS'),
-    TOKEN_COLON: Symbol('TOKEN_COLON'),
-    TOKEN_DEFAULT: Symbol('TOKEN_DEFAULT'),
+    TOKEN_CONTINUE: Symbol('TOKEN_CONTINUE'),
     TOKEN_ELSE: Symbol( 'TOKEN_ELSE'),
+    TOKEN_EXTENDS: Symbol('TOKEN_EXTENDS'),
+    TOKEN_EXPORT: Symbol('TOKEN_EXPORT'),
+    TOKEN_DEFAULT: Symbol('TOKEN_DEFAULT'),
     TOKEN_FALSE: Symbol( 'TOKEN_FALSE'),
     TOKEN_FOR: Symbol( 'TOKEN_FOR'),
+    TOKEN_FROM: Symbol('TOKEN_FROM'),
     TOKEN_FUN: Symbol( 'TOKEN_FUN'),
     TOKEN_IF: Symbol( 'TOKEN_IF'),
+    TOKEN_IMPORT: Symbol('TOKEN_IMPORT'),
     TOKEN_NIL: Symbol('TOKEN_NIL'),
     TOKEN_OR: Symbol('TOKEN_OR'),
     TOKEN_PRINT : Symbol('TOKEN_PRINT'),
@@ -50,14 +55,11 @@ const TokenType = Object.freeze({
     TOKEN_TRUE: Symbol( 'TOKEN_TRUE'),
     TOKEN_VAR: Symbol( 'TOKEN_VAR'),
     TOKEN_WHILE: Symbol( 'TOKEN_WHILE'),
+
+    //Mics tokens
     TOKEN_EOF: Symbol( 'TOKEN_EOF'),
     TOKEN_EMPTY: Symbol( 'TOKEN_EMPTY'),
-    TOKEN_CONTINUE: Symbol('TOKEN_CONTINUE'),
-    TOKEN_EXTENDS: Symbol('TOKEN_EXTENDS'),
-    TOKEN_EXPORT: Symbol('TOKEN_EXPORT'),
-    TOKEN_IMPORT: Symbol('TOKEN_IMPORT'),
-    TOKEN_FROM: Symbol('TOKEN_FROM'),
-    TOKEN_EOF_IMPORT: Symbol('TOKEN_EOF_IMPORT'),
+
 
 });
 

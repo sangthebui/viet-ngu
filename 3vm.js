@@ -45,7 +45,8 @@ export const initEnv = () => {
         frame: null,
     };
     defineNative(env, 'clock', clockNative);
-    defineNative(env, 'Array', ArrayObject);
+    // defineNative(env, 'Array', ArrayObject);
+    defineNative(env, 'Mang', ArrayObject);
 
     return env;
 }

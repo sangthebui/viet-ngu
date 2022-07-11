@@ -109,7 +109,17 @@ export default class Scanner {
         switch(currentCharacter){
             case 'b': return this.checkKeyword('bien', TokenType.TOKEN_VAR);
             case 'c': return this.checkKeyword('cho', TokenType.TOKEN_FOR);
-            case 'd': return this.checkKeyword('dung', TokenType.TOKEN_TRUE);
+            case 'd': {
+                if (this.current - this.start > 1){
+                    const innerCharacter = this.source.charAt(this.start + 1);
+                    switch (innerCharacter){
+                        case 'o': return this.checkKeyword('doi', TokenType.TOKEN_SWITCH);
+                        case 'u': return this.checkKeyword('dung', TokenType.TOKEN_TRUE);
+                    }
+                }
+                break;
+            }
+            case 'g': return this.checkKeyword('goc', TokenType.TOKEN_SUPER);
             case 'h': {
                 if (this.current - this.start > 1){
                     const innerCharacter = this.source.charAt(this.start + 1);
@@ -120,13 +130,20 @@ export default class Scanner {
                 }
                 break;
             }
-            case 'k': return this.checkKeyword('khac', TokenType.TOKEN_ELSE);
+            case 'k': {
+                if (this.current - this.start > 1){
+                    const innerCharacter = this.source.substring(this.start + 1, this.start + 3);                    switch (innerCharacter){
+                        case 'ha': return this.checkKeyword('khac', TokenType.TOKEN_ELSE);
+                        case 'hi': return this.checkKeyword('khiem_dien', TokenType.TOKEN_DEFAULT);
+                    }
+                }
+                break;
+            }
             case 'l': {
                 if (this.current - this.start > 1){
                     const innerCharacter = this.source.charAt(this.start + 1);
                     switch (innerCharacter){
                         case 'o': return this.checkKeyword('lop', TokenType.TOKEN_CLASS);
-                        case 'u': return this.checkKeyword('luc', TokenType.TOKEN_WHILE);
                     }
                 }
                 break;
@@ -137,7 +154,8 @@ export default class Scanner {
                     switch (innerCharacter){
                         case 'a': return this.checkKeyword('nay', TokenType.TOKEN_THIS);
                         case 'e': return this.checkKeyword('neu', TokenType.TOKEN_IF);
-                        case 'i': return this.checkKeyword('nil', TokenType.TOKEN_NIL);
+                        case 'g': return this.checkKeyword('nghi', TokenType.TOKEN_BREAK);
+                        case 'h': return this.checkKeyword('nhap', TokenType.TOKEN_IMPORT);
                     }
                 }
                 break;
@@ -152,17 +170,33 @@ export default class Scanner {
                 }
                 break;
             }
-            case 't': return this.checkKeyword('tra', TokenType.TOKEN_RETURN);
+            case 't': {
+                if (this.current - this.start > 1){
+                    const innerCharacter = this.source.substring(this.start + 1, this.start + 3);
+                    switch (innerCharacter){
+                        case 'he': return this.checkKeyword('theo', TokenType.TOKEN_EXTENDS);
+                        case 'ie': return this.checkKeyword('tiep', TokenType.TOKEN_CONTINUE);
+                        case 'ra': return this.checkKeyword('tra', TokenType.TOKEN_RETURN);
+                        case 'ro': return this.checkKeyword('trong_khi', TokenType.TOKEN_WHILE);
+                        case 'ru': return this.checkKeyword('truong_hop', TokenType.TOKEN_CASE);
+                        case 'u_': return this.checkKeyword('tu_day', TokenType.TOKEN_FROM);
+                    }
+                }
+                break;
+            }
             case 'v': {
                 if (this.current - this.start > 1){
                     const innerCharacter = this.source.charAt(this.start + 1);
                     switch (innerCharacter){
                         case 'a': return this.checkKeyword('va', TokenType.TOKEN_AND);
                         case 'i': return this.checkKeyword('viet', TokenType.TOKEN_PRINT);
+                        case 'o': return this.checkKeyword('vo_gia', TokenType.TOKEN_NIL);
+
                     }
                 }
                 break;
             }
+            case 'x': return this.checkKeyword('xuat', TokenType.TOKEN_EXPORT);
         }
         return TokenType.TOKEN_IDENTIFIER;
     }

@@ -24,7 +24,8 @@ const method = (identifierName, env) =>{
     closure.type = CallableType.METHOD;
     let compiler = new Ledger({parser});
     compiler.setClosure(closure);
-    compiler.addLocal('this', 0);
+    // compiler.addLocal('this', 0);
+    compiler.addLocal('nay', 0);
     compiler.enclosing = current;
     compiler.type = CompilerType.METHOD;
 
@@ -101,7 +102,8 @@ const inheritance = (classIdentifier, env) => {
         }
 
         current.beginScope();
-        current.addLocal("super");
+        // current.addLocal("super");
+        current.addLocal("goc");
         //markInitialized
         current.locals[ current.localCount - 1 ].depth = current.scopeDepth;
 

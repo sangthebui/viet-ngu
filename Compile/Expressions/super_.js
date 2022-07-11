@@ -17,15 +17,19 @@ const super_ = (_, env) =>{
     let identifierConstantIndex = current.closure.identifierConstant(identifierName);
 
 
-    namedVariable("this", false, env);
+    // namedVariable('this', false, env);
+    namedVariable('nay', false, env);
 
     if (parser.match(TokenType.TOKEN_LEFT_PAREN)) {
         let argCount = argumentList(env);
-        namedVariable("super", false, env);
+        // namedVariable('super', false, env);
+        namedVariable('goc', false, env);
+
         current.closure.emitBytes(OpCode.OP_SUPER_INVOKE, identifierConstantIndex);
         current.closure.emitByte(argCount);
     } else {
-        namedVariable("super", false, env);
+        // namedVariable('super', false, env);
+        namedVariable('goc', false, env);
         current.closure.emitBytes(OpCode.OP_GET_SUPER, identifierConstantIndex);
     }
 }
